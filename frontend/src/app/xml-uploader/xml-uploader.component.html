@@ -1,0 +1,8 @@
+<div>
+  <h2>XML Dateien hochladen</h2>
+  <input type="file" (change)="onFilesSelected($event)" accept=".xml" multiple />
+  <div *ngFor="let file of parsedFiles">
+    <h3>{{ file.name }}</h3>
+    <pre>{{ file.content | json }}</pre>
+  </div>
+</div>
