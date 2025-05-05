@@ -7,19 +7,40 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+      background-image: url('background.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #333;
+      background-color: rgba(51, 51, 51, 0.8); /* leicht transparent für besseren Kontrast */
       padding: 10px 20px;
       color: white;
     }
 
     header img {
       height: 40px;
+    }
+
+    main {
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.8); /* optional: halbtransparenter Hintergrund für Lesbarkeit */
+      margin: 20px;
+      border-radius: 10px;
+    }
+
+    .upload-section {
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -31,7 +52,16 @@
 </header>
 
 <main>
-  <p>Dies ist die Startseite.</p>
+  <center>
+    <div class="upload-section">
+      <form action="#" method="post" enctype="multipart/form-data">
+        <label for="sdatFile">Lade eine .sdat-Datei hoch:</label>
+        <input type="file" id="sdatFile" name="sdatFile" accept=".sdat">
+        <br><br>
+        <button type="submit">Hochladen</button>
+      </form>
+    </div>
+  </center>
 </main>
 
 </body>
