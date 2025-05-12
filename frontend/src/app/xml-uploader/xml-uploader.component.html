@@ -1,0 +1,24 @@
+<div>
+  <h2>XML Dateien hochladen</h2>
+  <input type="file" (change)="onFilesSelected($event)" accept=".xml" multiple />
+
+  <!-- Upload Status Messages -->
+  <div class="upload-messages" *ngIf="uploadMessages.length > 0">
+    <h3>Upload Status:</h3>
+    <ul>
+      <li *ngFor="let message of uploadMessages" [ngClass]="{'success': message.includes('erfolgreich'), 'error': message.includes('Fehler')}">
+        {{ message }}
+      </li>
+    </ul>
+  </div>
+
+  <!-- File Content Display -->
+  <div *ngFor="let file of parsedFiles">
+    <h3>
+      <span class="filename">{{ file.name }}</span>
+      <span *ngIf="uploadStatus[file.name] === 'pending'" class="status pending">Wird hochgeladen...</span>
+      <span *ngIf="uploadStatus[file.name] === 'success'" class="status success">Hochgeladen</span>
+      <span *ngIf="uploadStatus[file.name] === 'error'" class="status error">Fehler</span>
+    </h3>
+  </div>
+</div>
