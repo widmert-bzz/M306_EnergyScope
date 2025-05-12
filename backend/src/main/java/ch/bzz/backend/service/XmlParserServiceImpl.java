@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 /**
  * Implementation of the XmlParserService interface
@@ -95,7 +97,7 @@ public class XmlParserServiceImpl implements XmlParserService {
                                 Measurement measurement = Measurement.builder()
                                         .type(dataType)
                                         .identifier(obis)
-                                        .value(value)
+                                        .myvalue(value)
                                         .timestamp(timestamp)
                                         .unit("KWH") // Assuming KWH for ESLBillingData
                                         .build();
@@ -187,7 +189,7 @@ public class XmlParserServiceImpl implements XmlParserService {
                         Measurement measurement = Measurement.builder()
                                 .type(dataType)
                                 .identifier(String.valueOf(sequence))
-                                .value(volume)
+                                .myvalue(volume)
                                 .timestamp(timestamp)
                                 .unit(unit)
                                 .build();
@@ -261,15 +263,18 @@ public class XmlParserServiceImpl implements XmlParserService {
     private Map<String, StromzaehlerDaten> parseESLBillingDataToStromzaehlerDaten(Document document) {
         Map<String, StromzaehlerDaten> result = new HashMap<>();
 
+        // Maps to store Hochtarif and Niedertarif values for each meter ID and timestamp
+        Map<String, Map<LocalDateTime, Double>> bezugHochtarifMap = new HashMap<>();
+        Map<String, Map<LocalDateTime, Double>> bezugNiedertarifMap = new HashMap<>();
+        Map<String, Map<LocalDateTime, Double>> einspeisungHochtarifMap = new HashMap<>();
+        Map<String, Map<LocalDateTime, Double>> einspeisungNiedertarifMap = new HashMap<>();
+
         NodeList meterNodes = document.getElementsByTagName("Meter");
         for (int i = 0; i < meterNodes.getLength(); i++) {
             Node meterNode = meterNodes.item(i);
             if (meterNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element meterElement = (Element) meterNode;
                 String meterId = meterElement.getAttribute("factoryNo");
-
-                // Create or get StromzaehlerDaten for this meter
-                StromzaehlerDaten stromzaehlerDaten = result.computeIfAbsent(meterId, StromzaehlerDaten::new);
 
                 NodeList timePeriodNodes = meterElement.getElementsByTagName("TimePeriod");
                 for (int j = 0; j < timePeriodNodes.getLength(); j++) {
@@ -294,19 +299,36 @@ public class XmlParserServiceImpl implements XmlParserService {
                                     timestamp = LocalDateTime.parse(valueTimeStr, DATE_TIME_FORMATTER);
                                 }
 
-                                // Determine if it's production or consumption based on OBIS code
-                                EnergyData.DataType dataType = determineDataTypeFromObis(obis);
+                                // Store values in the appropriate map based on OBIS code
+                                if (obis.equals("1-1:1.8.1")) { // Bezug Hochtarif
+                                    bezugHochtarifMap.computeIfAbsent(meterId, k1 -> new HashMap<>())
+                                            .put(timestamp, value);
+                                } else if (obis.equals("1-1:1.8.2")) { // Bezug Niedertarif
+                                    bezugNiedertarifMap.computeIfAbsent(meterId, k1 -> new HashMap<>())
+                                            .put(timestamp, value);
+                                } else if (obis.equals("1-1:2.8.1")) { // Einspeisung Hochtarif
+                                    einspeisungHochtarifMap.computeIfAbsent(meterId, k1 -> new HashMap<>())
+                                            .put(timestamp, value);
+                                } else if (obis.equals("1-1:2.8.2")) { // Einspeisung Niedertarif
+                                    einspeisungNiedertarifMap.computeIfAbsent(meterId, k1 -> new HashMap<>())
+                                            .put(timestamp, value);
+                                } else {
+                                    // For other OBIS codes, create and add Messwert directly
+                                    EnergyData.DataType dataType = determineDataTypeFromObis(obis);
 
-                                // Create Messwert and add to StromzaehlerDaten
-                                Messwert messwert = Messwert.builder()
-                                        .timestamp(timestamp)
-                                        .absoluteValue(value)
-                                        .relativeValue(0.0) // Calculate relative value if needed
-                                        .unit("KWH") // Assuming KWH for ESLBillingData
-                                        .type(dataType)
-                                        .build();
+                                    // Create or get StromzaehlerDaten for this meter
+                                    StromzaehlerDaten stromzaehlerDaten = result.computeIfAbsent(meterId, StromzaehlerDaten::new);
 
-                                stromzaehlerDaten.addMesswert(messwert);
+                                    Messwert messwert = Messwert.builder()
+                                            .timestamp(timestamp)
+                                            .absoluteValue(value)
+                                            .relativeValue(0.0) // Calculate relative value if needed
+                                            .unit("KWH") // Assuming KWH for ESLBillingData
+                                            .type(dataType)
+                                            .build();
+
+                                    stromzaehlerDaten.addMesswert(messwert);
+                                }
                             }
                         }
                     }
@@ -314,11 +336,102 @@ public class XmlParserServiceImpl implements XmlParserService {
             }
         }
 
+        // Process Bezug (Consumption) values - map to ID742
+        processAndAddCombinedValues(result, bezugHochtarifMap, bezugNiedertarifMap, "ID742", EnergyData.DataType.CONSUMPTION);
+
+        // Process Einspeisung (Production) values - map to ID735
+        processAndAddCombinedValues(result, einspeisungHochtarifMap, einspeisungNiedertarifMap, "ID735", EnergyData.DataType.PRODUCTION);
+
         return result;
+    }
+
+    /**
+     * Process and add combined values for Hochtarif and Niedertarif
+     * 
+     * @param result The result map to add the combined values to
+     * @param hochtarifMap Map of Hochtarif values by meter ID and timestamp
+     * @param niedertarifMap Map of Niedertarif values by meter ID and timestamp
+     * @param targetMeterId The target meter ID to use for the combined values
+     * @param dataType The data type (PRODUCTION or CONSUMPTION)
+     */
+    private void processAndAddCombinedValues(
+            Map<String, StromzaehlerDaten> result,
+            Map<String, Map<LocalDateTime, Double>> hochtarifMap,
+            Map<String, Map<LocalDateTime, Double>> niedertarifMap,
+            String targetMeterId,
+            EnergyData.DataType dataType) {
+
+        // Create or get StromzaehlerDaten for the target meter ID
+        StromzaehlerDaten targetStromzaehlerDaten = result.computeIfAbsent(targetMeterId, StromzaehlerDaten::new);
+
+        // Process all meter IDs in the Hochtarif map
+        for (String sourceMeterId : hochtarifMap.keySet()) {
+            Map<LocalDateTime, Double> hochtarifValues = hochtarifMap.get(sourceMeterId);
+            Map<LocalDateTime, Double> niedertarifValues = niedertarifMap.getOrDefault(sourceMeterId, new HashMap<>());
+
+            // Process all timestamps in the Hochtarif map
+            for (Map.Entry<LocalDateTime, Double> entry : hochtarifValues.entrySet()) {
+                LocalDateTime timestamp = entry.getKey();
+                double hochtarifValue = entry.getValue();
+
+                // Get the corresponding Niedertarif value if available
+                double niedertarifValue = niedertarifValues.getOrDefault(timestamp, 0.0);
+
+                // Calculate the combined value
+                double combinedValue = hochtarifValue + niedertarifValue;
+
+                // Create Messwert with the combined value
+                Messwert messwert = Messwert.builder()
+                        .timestamp(timestamp)
+                        .absoluteValue(combinedValue)
+                        .relativeValue(0.0) // Calculate relative value if needed
+                        .unit("KWH") // Assuming KWH for ESLBillingData
+                        .type(dataType)
+                        .build();
+
+                // Add the Messwert to the target StromzaehlerDaten
+                targetStromzaehlerDaten.addMesswert(messwert);
+            }
+
+            // Process timestamps that are only in the Niedertarif map
+            for (Map.Entry<LocalDateTime, Double> entry : niedertarifValues.entrySet()) {
+                LocalDateTime timestamp = entry.getKey();
+
+                // Skip if already processed with Hochtarif
+                if (hochtarifValues.containsKey(timestamp)) {
+                    continue;
+                }
+
+                double niedertarifValue = entry.getValue();
+
+                // Create Messwert with just the Niedertarif value
+                Messwert messwert = Messwert.builder()
+                        .timestamp(timestamp)
+                        .absoluteValue(niedertarifValue)
+                        .relativeValue(0.0) // Calculate relative value if needed
+                        .unit("KWH") // Assuming KWH for ESLBillingData
+                        .type(dataType)
+                        .build();
+
+                // Add the Messwert to the target StromzaehlerDaten
+                targetStromzaehlerDaten.addMesswert(messwert);
+            }
+        }
     }
 
     private Map<String, StromzaehlerDaten> parseValidatedMeteredDataToStromzaehlerDaten(Document document) {
         Map<String, StromzaehlerDaten> result = new HashMap<>();
+
+        // Extract DocumentID from the header
+        String documentId = "";
+        NodeList documentIdNodes = document.getElementsByTagName("rsm:DocumentID");
+        if (documentIdNodes.getLength() > 0) {
+            String fullDocumentId = documentIdNodes.item(0).getTextContent();
+            // Extract the ID part (e.g., ID735 from eslevu180263_BR2294_ID735)
+            if (fullDocumentId.contains("_ID")) {
+                documentId = fullDocumentId.substring(fullDocumentId.lastIndexOf("_ID") + 1);
+            }
+        }
 
         NodeList meteringDataNodes = document.getElementsByTagName("rsm:MeteringData");
         for (int i = 0; i < meteringDataNodes.getLength(); i++) {
@@ -332,14 +445,16 @@ public class XmlParserServiceImpl implements XmlParserService {
 
                 EnergyData.DataType dataType = isProduction ? EnergyData.DataType.PRODUCTION : EnergyData.DataType.CONSUMPTION;
 
-                // Get meter ID
-                String meterId = "";
-                if (isProduction) {
-                    Element productionElement = (Element) meteringDataElement.getElementsByTagName("rsm:ProductionMeteringPoint").item(0);
-                    meterId = getTextContent(productionElement, "rsm:VSENationalID");
-                } else if (isConsumption) {
-                    Element consumptionElement = (Element) meteringDataElement.getElementsByTagName("rsm:ConsumptionMeteringPoint").item(0);
-                    meterId = getTextContent(consumptionElement, "rsm:VSENationalID");
+                // Get meter ID - use DocumentID if available, otherwise use VSENationalID
+                String meterId = documentId;
+                if (meterId.isEmpty()) {
+                    if (isProduction) {
+                        Element productionElement = (Element) meteringDataElement.getElementsByTagName("rsm:ProductionMeteringPoint").item(0);
+                        meterId = getTextContent(productionElement, "rsm:VSENationalID");
+                    } else if (isConsumption) {
+                        Element consumptionElement = (Element) meteringDataElement.getElementsByTagName("rsm:ConsumptionMeteringPoint").item(0);
+                        meterId = getTextContent(consumptionElement, "rsm:VSENationalID");
+                    }
                 }
 
                 // Create or get StromzaehlerDaten for this meter
@@ -393,5 +508,97 @@ public class XmlParserServiceImpl implements XmlParserService {
         }
 
         return result;
+    }
+
+    @Override
+    public Map<String, StromzaehlerDaten> processMultipleFiles(List<InputStream> inputStreams) {
+        // Combined result map
+        Map<String, StromzaehlerDaten> combinedResult = new HashMap<>();
+
+        // Process all input streams
+        for (InputStream inputStream : inputStreams) {
+            Map<String, StromzaehlerDaten> fileResult = parseXmlToStromzaehlerDaten(inputStream);
+
+            // Merge results
+            for (Map.Entry<String, StromzaehlerDaten> entry : fileResult.entrySet()) {
+                String meterId = entry.getKey();
+                StromzaehlerDaten fileData = entry.getValue();
+
+                // Get or create StromzaehlerDaten for this meter
+                StromzaehlerDaten combinedData = combinedResult.computeIfAbsent(meterId, StromzaehlerDaten::new);
+
+                // Add all measurements from this file
+                for (Map.Entry<LocalDateTime, Messwert> messwertEntry : fileData.getAllMesswerte().entrySet()) {
+                    combinedData.addMesswert(messwertEntry.getValue());
+                }
+            }
+        }
+
+        // Calculate relative values for each meter
+        for (StromzaehlerDaten stromzaehlerDaten : combinedResult.values()) {
+            calculateRelativeValues(stromzaehlerDaten);
+        }
+
+        return combinedResult;
+    }
+
+    /**
+     * Calculate relative values for all measurements in a StromzaehlerDaten object
+     * The relative value is the difference between the current absolute value and the previous absolute value
+     * 
+     * @param stromzaehlerDaten The StromzaehlerDaten object to process
+     */
+    private void calculateRelativeValues(StromzaehlerDaten stromzaehlerDaten) {
+        TreeMap<LocalDateTime, Messwert> messwerte = stromzaehlerDaten.getAllMesswerte();
+
+        // We need at least two measurements to calculate relative values
+        if (messwerte.size() < 2) {
+            return;
+        }
+
+        // Separate by type (production/consumption)
+        Map<EnergyData.DataType, TreeMap<LocalDateTime, Messwert>> typeMap = new HashMap<>();
+
+        // Initialize maps for each type
+        typeMap.put(EnergyData.DataType.PRODUCTION, new TreeMap<>());
+        typeMap.put(EnergyData.DataType.CONSUMPTION, new TreeMap<>());
+
+        // Populate type maps
+        for (Map.Entry<LocalDateTime, Messwert> entry : messwerte.entrySet()) {
+            Messwert messwert = entry.getValue();
+            typeMap.get(messwert.getType()).put(entry.getKey(), messwert);
+        }
+
+        // Calculate relative values for each type
+        for (EnergyData.DataType type : typeMap.keySet()) {
+            TreeMap<LocalDateTime, Messwert> typedMesswerte = typeMap.get(type);
+
+            if (typedMesswerte.size() < 2) {
+                continue;
+            }
+
+            // Get the first entry to use as previous value
+            Map.Entry<LocalDateTime, Messwert> previousEntry = typedMesswerte.firstEntry();
+
+            // Iterate through the rest of the entries
+            for (Map.Entry<LocalDateTime, Messwert> entry : typedMesswerte.entrySet()) {
+                // Skip the first entry
+                if (entry.getKey().equals(previousEntry.getKey())) {
+                    continue;
+                }
+
+                Messwert currentMesswert = entry.getValue();
+                Messwert previousMesswert = previousEntry.getValue();
+
+                // Calculate relative value
+                double relativeValue = currentMesswert.getAbsoluteValue() - previousMesswert.getAbsoluteValue();
+
+                // Update the messwert
+                currentMesswert.setRelativeValue(relativeValue);
+
+                // Update previous entry for next iteration
+                previousEntry = entry;
+            }
+        }
     }
 }

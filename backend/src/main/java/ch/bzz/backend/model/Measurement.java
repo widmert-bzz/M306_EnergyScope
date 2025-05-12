@@ -29,8 +29,8 @@ public class Measurement {
     @Column(name = "identifier")
     private String identifier; // OBIS code or sequence number
 
-    @Column(name = "value")
-    private double value;
+    @Column(name = "myvalue")
+    private double myvalue;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;

@@ -1,4 +1,4 @@
-<div class="app-container">
+<div class="app-container" [class.sidebar-open]="sidebarOpen">
   <!-- Main content -->
   <div class="main-content">
     <button class="sidebar-toggle" [class.open]="sidebarOpen" (click)="toggleSidebar()">
@@ -9,6 +9,9 @@
     <div class="top-right-uploader">
       <app-xml-uploader [displayMode]="'button'"></app-xml-uploader>
     </div>
+
+    <!-- Energy Chart Component -->
+    <app-energy-chart></app-energy-chart>
   </div>
 
   <!-- Sidebar -->
