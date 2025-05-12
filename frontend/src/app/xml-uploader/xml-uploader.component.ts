@@ -1,103 +1,125 @@
-import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, AfterViewInit, Input, OnInit, OnDestroy } from '@angular/core';
+import { XmlUploaderService } from './xml-uploader.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-xml-uploader',
   templateUrl: './xml-uploader.component.html',
   styleUrls: ['./xml-uploader.component.css']
 })
-export class XmlUploaderComponent {
-  parsedFiles: { name: string; content: any }[] = []; // Declare the property
-  uploadStatus: { [filename: string]: 'pending' | 'success' | 'error' } = {};
-  uploadMessages: string[] = [];
+export class XmlUploaderComponent implements AfterViewInit, OnInit, OnDestroy {
+  @Input() displayMode: 'button' | 'files' | 'both' = 'both'; // Control which part to display
 
-  constructor(private http: HttpClient) {}
+  parsedFiles: { name: string; content: any }[] = [];
+  uploadStatus: { [filename: string]: 'pending' | 'success' | 'error' } = {};
+  uploadProgress: { [filename: string]: number } = {};
+  uploadMessages: string[] = [];
+  errorMessages: { [filename: string]: string } = {};
+
+  private subscriptions: Subscription[] = [];
+
+  constructor(private uploaderService: XmlUploaderService) {}
+
+  ngOnInit() {
+    // Subscribe to service observables
+    this.subscriptions.push(
+      this.uploaderService.parsedFiles$.subscribe(files => {
+        this.parsedFiles = files;
+        // Set up tooltip listeners after a short delay to ensure DOM is updated
+        setTimeout(() => {
+          this.setupTooltipListeners();
+        }, 300);
+      })
+    );
+
+    this.subscriptions.push(
+      this.uploaderService.uploadStatus$.subscribe(status => {
+        this.uploadStatus = status;
+      })
+    );
+
+    this.subscriptions.push(
+      this.uploaderService.uploadProgress$.subscribe(progress => {
+        this.uploadProgress = progress;
+      })
+    );
+
+    this.subscriptions.push(
+      this.uploaderService.errorMessages$.subscribe(messages => {
+        this.errorMessages = messages;
+      })
+    );
+  }
+
+  ngAfterViewInit() {
+    this.setupTooltipListeners();
+  }
+
+  ngOnDestroy() {
+    // Unsubscribe from all subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  // Set up event listeners for tooltips
+  setupTooltipListeners() {
+    setTimeout(() => {
+      const tooltips = document.querySelectorAll('.tooltip');
+      tooltips.forEach(tooltip => {
+        tooltip.addEventListener('mouseenter', (event) => {
+          const tooltipElement = tooltip as HTMLElement;
+          const tooltipText = tooltipElement.querySelector('.tooltiptext') as HTMLElement;
+          if (tooltipText) {
+            this.positionTooltip(event as MouseEvent, tooltipText, tooltipElement);
+          }
+        });
+      });
+    }, 500); // Small delay to ensure DOM is ready
+  }
+
+  // Position tooltip based on mouse position and viewport
+  positionTooltip(event: MouseEvent, tooltipText: HTMLElement, tooltipElement: HTMLElement) {
+    const rect = tooltipElement.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Calculate position
+    let left = event.clientX;
+    let top = event.clientY - 10; // 10px above cursor
+
+    // Adjust if tooltip would go off screen
+    const tooltipWidth = tooltipText.offsetWidth;
+    const tooltipHeight = tooltipText.offsetHeight;
+
+    // Ensure tooltip doesn't go off right edge
+    if (left + tooltipWidth > viewportWidth - 20) {
+      left = viewportWidth - tooltipWidth - 20;
+    }
+
+    // Ensure tooltip doesn't go off top edge
+    if (top - tooltipHeight < 20) {
+      top = 20 + tooltipHeight;
+    }
+
+    // Set position
+    tooltipText.style.left = `${left}px`;
+    tooltipText.style.top = `${top - tooltipHeight}px`;
+  }
+
+  // Method to get error message for a specific file
+  getErrorMessage(filename: string): string {
+    return this.uploaderService.getErrorMessage(filename);
+  }
+
+  // Method to get upload progress for a specific file
+  getUploadProgress(filename: string): number {
+    return this.uploaderService.getUploadProgress(filename);
+  }
 
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.parsedFiles = []; // Clear previous files
-      this.uploadMessages = []; // Clear previous messages
-      this.uploadStatus = {}; // Clear previous status
-
       const files = Array.from(input.files);
-
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const xmlString = reader.result as string;
-          const parsedContent = this.parseXml(xmlString);
-          this.parsedFiles.push({ name: file.name, content: parsedContent });
-          this.uploadFile(file);
-        };
-        reader.readAsText(file);
-      });
+      this.uploaderService.processFiles(files);
     }
-  }
-
-  uploadFile(file: File): void {
-    const formData = new FormData();
-    formData.append('file', file);
-    this.uploadStatus[file.name] = 'pending';
-
-    this.http.post('http://localhost:8080/upload', formData)
-      .subscribe({
-        next: (response) => {
-          this.uploadStatus[file.name] = 'success';
-          this.uploadMessages.push(`${file.name} wurde erfolgreich hochgeladen.`);
-        },
-        error: (error) => {
-          this.uploadStatus[file.name] = 'error';
-          this.uploadMessages.push(`Fehler beim Hochladen von ${file.name}: ${error.message}`);
-          console.error('Upload error:', error);
-        }
-      });
-  }
-
-  parseXml(xmlString: string): any {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
-    return this.xmlToJson(xmlDoc);
-  }
-
-  xmlToJson(xml: Node): any {
-    const obj: any = {};
-    if (xml.nodeType === 1) { // Element
-      const element = xml as Element;
-      if (element.attributes.length > 0) {
-        obj['@attributes'] = {};
-        for (let j = 0; j < element.attributes.length; j++) {
-          const attribute = element.attributes.item(j);
-          if (attribute) {
-            obj['@attributes'][attribute.nodeName] = attribute.nodeValue;
-          }
-        }
-      }
-    } else if (xml.nodeType === 3) { // Text
-      const textContent = xml.nodeValue?.trim();
-      if (textContent) {
-        return textContent;
-      }
-      return null;
-    }
-
-    if (xml.hasChildNodes()) {
-      for (let i = 0; i < xml.childNodes.length; i++) {
-        const item = xml.childNodes.item(i);
-        const nodeName = item.nodeName;
-        const childObject = this.xmlToJson(item);
-        if (childObject !== null) {
-          if (typeof obj[nodeName] === 'undefined') {
-            obj[nodeName] = childObject;
-          } else {
-            if (!Array.isArray(obj[nodeName])) {
-              obj[nodeName] = [obj[nodeName]];
-            }
-            obj[nodeName].push(childObject);
-          }
-        }
-      }
-    }
-    return obj;
   }
 }
