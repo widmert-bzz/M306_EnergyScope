@@ -1,1 +1,14 @@
-<app-xml-uploader></app-xml-uploader>
+<div class="app-container">
+  <!-- Main content -->
+  <div class="main-content">
+    <button class="sidebar-toggle" (click)="toggleSidebar()">
+      <span *ngIf="!sidebarOpen">XML Upload</span>
+      <span *ngIf="sidebarOpen">×</span>
+    </button>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" [class.open]="sidebarOpen">
+    <app-xml-uploader></app-xml-uploader>
+  </div>
+</div>

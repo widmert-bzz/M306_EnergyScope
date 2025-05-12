@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { XmlUploaderComponent } from './xml-uploader/xml-uploader.component';
 
@@ -9,7 +10,8 @@ import { XmlUploaderComponent } from './xml-uploader/xml-uploader.component';
     XmlUploaderComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]

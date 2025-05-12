@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-xml-uploader',
@@ -7,21 +8,50 @@ import { Component } from '@angular/core';
 })
 export class XmlUploaderComponent {
   parsedFiles: { name: string; content: any }[] = []; // Declare the property
+  uploadStatus: { [filename: string]: 'pending' | 'success' | 'error' } = {};
+  uploadMessages: string[] = [];
+
+  constructor(private http: HttpClient) {}
 
   onFilesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.parsedFiles = []; // Clear previous files
-      Array.from(input.files).forEach(file => {
+      this.uploadMessages = []; // Clear previous messages
+      this.uploadStatus = {}; // Clear previous status
+
+      const files = Array.from(input.files);
+
+      files.forEach(file => {
         const reader = new FileReader();
         reader.onload = () => {
           const xmlString = reader.result as string;
-          const parsedContent = this.parseXml(xmlString); // Define parsedContent here
+          const parsedContent = this.parseXml(xmlString);
           this.parsedFiles.push({ name: file.name, content: parsedContent });
+          this.uploadFile(file);
         };
         reader.readAsText(file);
       });
     }
+  }
+
+  uploadFile(file: File): void {
+    const formData = new FormData();
+    formData.append('file', file);
+    this.uploadStatus[file.name] = 'pending';
+
+    this.http.post('http://localhost:8080/upload', formData)
+      .subscribe({
+        next: (response) => {
+          this.uploadStatus[file.name] = 'success';
+          this.uploadMessages.push(`${file.name} wurde erfolgreich hochgeladen.`);
+        },
+        error: (error) => {
+          this.uploadStatus[file.name] = 'error';
+          this.uploadMessages.push(`Fehler beim Hochladen von ${file.name}: ${error.message}`);
+          console.error('Upload error:', error);
+        }
+      });
   }
 
   parseXml(xmlString: string): any {
