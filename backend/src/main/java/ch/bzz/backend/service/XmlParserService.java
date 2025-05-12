@@ -26,4 +26,14 @@ public interface XmlParserService {
      * @return Map of meter IDs to StromzaehlerDaten objects
      */
     Map<String, StromzaehlerDaten> parseXmlToStromzaehlerDaten(InputStream inputStream);
+
+    /**
+     * Process multiple XML files (ESL and SDAT) and map them together
+     * This method makes data handling quicker by processing all files at once
+     * and calculating relative values
+     * 
+     * @param inputStreams List of input streams of XML files
+     * @return Map of meter IDs to StromzaehlerDaten objects with combined data
+     */
+    Map<String, StromzaehlerDaten> processMultipleFiles(List<InputStream> inputStreams);
 }

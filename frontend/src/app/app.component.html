@@ -1,10 +1,13 @@
-<div class="app-container">
+<div class="app-container" [class.sidebar-open]="sidebarOpen">
   <!-- Main content -->
   <div class="main-content">
     <button class="sidebar-toggle" (click)="toggleSidebar()">
       <span *ngIf="!sidebarOpen">XML Upload</span>
       <span *ngIf="sidebarOpen">×</span>
     </button>
+
+    <!-- Energy Chart Component -->
+    <app-energy-chart></app-energy-chart>
   </div>
 
   <!-- Sidebar -->

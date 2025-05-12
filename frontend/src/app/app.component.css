@@ -10,6 +10,19 @@
 .main-content {
   transition: margin-left 0.3s ease;
   padding: 20px;
+  padding-top: 70px; /* Add extra padding at the top to accommodate the sidebar toggle button */
+  margin-left: 0; /* Default margin */
+}
+
+/* Adjust main content when sidebar is open */
+.app-container.sidebar-open .main-content {
+  margin-left: 400px;
+}
+
+@media (max-width: 768px) {
+  .app-container.sidebar-open .main-content {
+    margin-left: 0;
+  }
 }
 
 /* Sidebar toggle button */
