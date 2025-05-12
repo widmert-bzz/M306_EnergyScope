@@ -8,6 +8,18 @@
     <input id="file-upload" type="file" (change)="onFilesSelected($event)" accept=".xml" multiple />
   </div>
 
+  <!-- Overall Progress Bar - shown when files are being uploaded -->
+  <div class="overall-progress-container" *ngIf="parsedFiles.length > 0 && overallProgress > 0 && overallProgress < 100">
+    <div class="overall-progress-info">
+      <span>Gesamtfortschritt: {{ overallProgress }}%</span>
+      <span *ngIf="estimatedTimeRemaining">Verbleibende Zeit: {{ estimatedTimeRemaining }}</span>
+    </div>
+    <div class="overall-progress-bar-container">
+      <div class="overall-progress-bar" [style.width]="overallProgress + '%'"></div>
+      <div class="overall-progress-percentage">{{ overallProgress }}%</div>
+    </div>
+  </div>
+
   <!-- File Content Display - shown when displayMode is 'files' or 'both' -->
   <div class="files-container" *ngIf="displayMode === 'files' || displayMode === 'both'">
     <div *ngFor="let file of parsedFiles" class="file-item">
@@ -20,11 +32,6 @@
           <span class="tooltiptext" *ngIf="getErrorMessage(file.name)">{{ getErrorMessage(file.name) }}</span>
         </span>
       </h3>
-
-      <!-- Progress Bar -->
-      <div class="progress-container" *ngIf="uploadStatus[file.name] === 'pending'">
-        <div class="progress-bar" [style.width]="getUploadProgress(file.name) + '%'"></div>
-      </div>
     </div>
   </div>
 </div>

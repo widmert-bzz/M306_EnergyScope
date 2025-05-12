@@ -5,6 +5,16 @@
       <span class="arrow-icon"></span>
     </button>
 
+    <!-- Title -->
+    <h1 class="app-title">XML Uploader</h1>
+
+    <!-- Global Progress Bar - shown when files are being uploaded -->
+    <div class="global-progress-container" *ngIf="overallProgress > 0 && overallProgress < 100">
+      <div class="global-progress-bar" [style.width]="overallProgress + '%'"></div>
+      <div class="global-progress-percentage">{{ overallProgress }}%</div>
+      <div class="global-progress-time" *ngIf="estimatedTimeRemaining">Verbleibende Zeit: {{ estimatedTimeRemaining }}</div>
+    </div>
+
     <!-- XML Upload Button in top right -->
     <div class="top-right-uploader">
       <app-xml-uploader [displayMode]="'button'"></app-xml-uploader>
