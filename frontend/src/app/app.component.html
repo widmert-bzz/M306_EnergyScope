@@ -1,10 +1,14 @@
 <div class="app-container" [class.sidebar-open]="sidebarOpen">
   <!-- Main content -->
   <div class="main-content">
-    <button class="sidebar-toggle" (click)="toggleSidebar()">
-      <span *ngIf="!sidebarOpen">XML Upload</span>
-      <span *ngIf="sidebarOpen">×</span>
+    <button class="sidebar-toggle" [class.open]="sidebarOpen" (click)="toggleSidebar()">
+      <span class="arrow-icon"></span>
     </button>
+
+    <!-- XML Upload Button in top right -->
+    <div class="top-right-uploader">
+      <app-xml-uploader [displayMode]="'button'"></app-xml-uploader>
+    </div>
 
     <!-- Energy Chart Component -->
     <app-energy-chart></app-energy-chart>
@@ -12,6 +16,10 @@
 
   <!-- Sidebar -->
   <div class="sidebar" [class.open]="sidebarOpen">
-    <app-xml-uploader></app-xml-uploader>
+    <!-- Sidebar Title -->
+    <h2 class="sidebar-title">Hochgeladene Dateien</h2>
+
+    <!-- XML Files List in sidebar -->
+    <app-xml-uploader [displayMode]="'files'"></app-xml-uploader>
   </div>
 </div>
