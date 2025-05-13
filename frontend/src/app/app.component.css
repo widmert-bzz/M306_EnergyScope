@@ -98,49 +98,13 @@
 .app-title {
   text-align: center;
   margin-bottom: 20px;
-  color: #333;
-  font-size: 2rem;
+  height: 300px; /* Increased to 3x the original size */
+  background-image: url('../assets/Logo_Titel.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
-/* Global progress bar */
-.global-progress-container {
-  height: 20px;
-  background-color: #e9ecef;
-  border-radius: 10px;
-  margin: 0 auto 20px;
-  overflow: hidden;
-  position: relative;
-  max-width: 800px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.global-progress-bar {
-  height: 100%;
-  background-color: #007bff;
-  border-radius: 10px;
-  transition: width 0.3s ease;
-}
-
-.global-progress-percentage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: bold;
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-}
-
-.global-progress-time {
-  text-align: center;
-  margin-top: 5px;
-  font-size: 14px;
-  color: #495057;
-}
 
 .sidebar.open {
   left: 0;
