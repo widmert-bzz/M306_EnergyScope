@@ -1,11 +1,25 @@
 <div>
   <!-- Upload Button - shown when displayMode is 'button' or 'both' -->
   <div class="upload-button-container" *ngIf="displayMode === 'button' || displayMode === 'both'">
-    <label for="file-upload" class="custom-file-upload">
+    <button class="custom-file-upload" (click)="openOverlay()">
       <i class="upload-icon"></i>
-      XML Dateien hochladen
-    </label>
+      Daten importieren
+    </button>
     <input id="file-upload" type="file" (change)="onFilesSelected($event)" accept=".xml" multiple />
+
+    <!-- Overlay for file upload -->
+    <div class="overlay" *ngIf="showOverlay" (click)="closeOverlayOnOutsideClick($event)">
+      <div class="overlay-content">
+        <div class="upload-area" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+          <div class="upload-icon-large"></div>
+          <p class="upload-text">Ziehen und ablegen Sie Ihre Dateien hier</p>
+          <div class="upload-options">
+            <span class="or-text">Oder:</span>
+            <button class="select-files-button" (click)="triggerFileInput($event)">Dateien von der Festplatte auswählen</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
 

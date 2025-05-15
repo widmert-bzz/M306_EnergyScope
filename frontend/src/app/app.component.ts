@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { XmlUploaderService } from './xml-uploader/xml-uploader.service';
 import { Subscription } from 'rxjs';
 import { XmlUploaderComponent } from './xml-uploader/xml-uploader.component';
+import { SidebarService } from './shared/sidebar.service';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private uploaderService: XmlUploaderService) {}
+  constructor(
+    private uploaderService: XmlUploaderService,
+    private sidebarService: SidebarService
+  ) {}
 
   ngOnInit() {
     // Subscribe to upload status and progress
@@ -37,6 +41,17 @@ export class AppComponent implements OnInit, OnDestroy {
         // Set upload start time when first file starts uploading
         if (this.uploadStartTime === 0 && Object.values(status).some(s => s === 'pending')) {
           this.uploadStartTime = Date.now();
+        }
+      })
+    );
+
+    // Subscribe to sidebar toggle events
+    this.subscriptions.push(
+      this.sidebarService.toggleSidebar$.subscribe(open => {
+        if (open !== undefined) {
+          this.sidebarOpen = open;
+        } else {
+          this.toggleSidebar();
         }
       })
     );
@@ -62,6 +77,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   toggleSidebar() {
     this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  // Close sidebar when clicking outside
+  closeOnOutsideClick(event: MouseEvent) {
+    // Only close if the sidebar is open and the click is on the overlay background
+    if (this.sidebarOpen && event.target === event.currentTarget) {
+      this.sidebarOpen = false;
+      // Also close the XML uploader overlay
+      this.sidebarService.toggleSidebar(false);
+    }
   }
 
   // Check if there are any files currently being uploaded

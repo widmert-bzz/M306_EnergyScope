@@ -6,6 +6,26 @@
   overflow-x: hidden;
 }
 
+/* Overlay background */
+.app-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.app-container.overlay-active::before {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* Main content */
 .main-content {
   transition: margin-left 0.3s ease;

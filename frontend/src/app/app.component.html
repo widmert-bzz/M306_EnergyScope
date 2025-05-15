@@ -1,4 +1,4 @@
-<div class="app-container">
+<div class="app-container" [class.overlay-active]="sidebarOpen" (click)="closeOnOutsideClick($event)">
   <!-- Main content -->
   <div class="main-content">
     <button class="sidebar-toggle" [class.open]="sidebarOpen" (click)="toggleSidebar()">
