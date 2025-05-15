@@ -21,6 +21,9 @@
           <span class="tooltiptext" *ngIf="getErrorMessage(file.name)">{{ getErrorMessage(file.name) }}</span>
         </span>
       </h3>
+      <div class="progress-container" *ngIf="uploadStatus[file.name] === 'pending' || (uploadStatus[file.name] === 'success' && showProgressAfterComplete[file.name])">
+        <div class="progress-bar" [style.width.%]="getUploadProgress(file.name)"></div>
+      </div>
     </div>
   </div>
 </div>

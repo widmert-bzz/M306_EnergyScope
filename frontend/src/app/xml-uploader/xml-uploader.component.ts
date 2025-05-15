@@ -15,6 +15,7 @@ export class XmlUploaderComponent implements AfterViewInit, OnInit, OnDestroy {
   uploadProgress: { [filename: string]: number } = {};
   uploadMessages: string[] = [];
   errorMessages: { [filename: string]: string } = {};
+  showProgressAfterComplete: { [filename: string]: boolean } = {};
 
 
   private subscriptions: Subscription[] = [];
@@ -35,6 +36,17 @@ export class XmlUploaderComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.uploaderService.uploadStatus$.subscribe(status => {
+        // Check for newly completed uploads
+        Object.keys(status).forEach(filename => {
+          if (status[filename] === 'success' && this.uploadStatus[filename] !== 'success') {
+            // Set flag to show progress bar for 2 seconds after completion
+            this.showProgressAfterComplete[filename] = true;
+            setTimeout(() => {
+              this.showProgressAfterComplete[filename] = false;
+            }, 2000);
+          }
+        });
+
         this.uploadStatus = status;
       })
     );

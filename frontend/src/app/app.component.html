@@ -20,7 +20,15 @@
     <!-- Sidebar Title -->
     <h2 class="sidebar-title">Hochgeladene Dateien</h2>
 
+    <!-- Progress Bar -->
+    <div class="progress-container" *ngIf="hasUploadingFiles()">
+      <div class="overall-progress-container">
+        <div class="overall-progress-bar" [style.width.%]="getOverallProgress()"></div>
+        <div class="progress-percentage">{{ getOverallProgress() | number:'1.0-0' }}%</div>
+      </div>
+    </div>
+
     <!-- XML Files List in sidebar -->
-    <app-xml-uploader [displayMode]="'files'"></app-xml-uploader>
+    <app-xml-uploader [displayMode]="'files'" #xmlUploader></app-xml-uploader>
   </div>
 </div>
