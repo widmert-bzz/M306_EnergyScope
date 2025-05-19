@@ -3,6 +3,10 @@
   background-color: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  margin: 0 auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 h2 {
@@ -48,8 +52,11 @@ select {
 }
 
 .chart-container {
-  height: 400px;
+  height: 350px;
   margin-top: 20px;
+  margin-left: 60px;
+  margin-right: 60px;
+  overflow: hidden;
 }
 
 .no-data {
