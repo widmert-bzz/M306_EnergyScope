@@ -1,9 +1,13 @@
-<div class="app-container" [class.sidebar-open]="sidebarOpen">
+<div class="app-container" [class.overlay-active]="sidebarOpen" (click)="closeOnOutsideClick($event)">
   <!-- Main content -->
   <div class="main-content">
     <button class="sidebar-toggle" [class.open]="sidebarOpen" (click)="toggleSidebar()">
       <span class="arrow-icon"></span>
     </button>
+
+    <!-- Title -->
+    <h1 class="app-title"></h1>
+
 
     <!-- XML Upload Button in top right -->
     <div class="top-right-uploader">
@@ -19,7 +23,15 @@
     <!-- Sidebar Title -->
     <h2 class="sidebar-title">Hochgeladene Dateien</h2>
 
+    <!-- Progress Bar -->
+    <div class="progress-container" *ngIf="hasUploadingFiles()">
+      <div class="overall-progress-container">
+        <div class="overall-progress-bar" [style.width.%]="getOverallProgress()"></div>
+        <div class="progress-percentage">{{ getOverallProgress() | number:'1.0-0' }}%</div>
+      </div>
+    </div>
+
     <!-- XML Files List in sidebar -->
-    <app-xml-uploader [displayMode]="'files'"></app-xml-uploader>
+    <app-xml-uploader [displayMode]="'files'" #xmlUploader></app-xml-uploader>
   </div>
 </div>

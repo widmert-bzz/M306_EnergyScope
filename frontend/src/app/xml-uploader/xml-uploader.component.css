@@ -12,6 +12,7 @@ input[type="file"] {
 .upload-button-container {
   margin-bottom: 20px;
   text-align: center;
+  position: relative; /* Added for absolute positioning of overlay */
 }
 
 .custom-file-upload {
@@ -25,6 +26,8 @@ input[type="file"] {
   font-weight: bold;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+  border: none; /* Ensure button has no border */
+  text-align: center; /* Center text for button */
 }
 
 .custom-file-upload:hover {
@@ -45,8 +48,6 @@ input[type="file"] {
 
 /* Files container */
 .files-container {
-  max-height: 400px;
-  overflow-y: auto;
   background-color: #f8f9fa;
   border-radius: 4px;
   padding: 10px;
@@ -74,6 +75,52 @@ input[type="file"] {
   background-color: #007bff;
   border-radius: 3px;
   transition: width 0.3s ease;
+}
+
+/* Overall progress bar styling */
+.overall-progress-container {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.overall-progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #495057;
+}
+
+.overall-progress-bar-container {
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.overall-progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.overall-progress-percentage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Upload messages styling */
@@ -143,10 +190,100 @@ h3 {
   margin-right: 10px;
 }
 
+/* Overlay styling */
+.overlay {
+  position: absolute;
+  z-index: 1000;
+  display: block;
+}
+
+.overlay-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  padding: 30px;
+  min-width: 500px;
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+}
+
+/* Speech bubble arrow */
+.overlay-content::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  right: 20px; /* Position the arrow near the right edge */
+  border-width: 0 10px 10px 10px;
+  border-style: solid;
+  border-color: transparent transparent white transparent;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.upload-area.drag-over {
+  border-color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.upload-icon-large {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.upload-text {
+  font-size: 18px;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #333;
+}
+
+.upload-options {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+}
+
+.or-text {
+  margin-right: 15px;
+  color: #666;
+}
+
+.select-files-button {
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.select-files-button:hover {
+  background-color: #333;
+}
+
 /* Tooltip styling */
 .tooltip {
   position: relative;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
 }
 
 .tooltip .tooltiptext {
@@ -154,7 +291,7 @@ h3 {
   width: 250px;
   background-color: #555;
   color: #fff;
-  text-align: center;
+  text-align: left;
   border-radius: 6px;
   padding: 8px;
   position: fixed;
@@ -174,7 +311,8 @@ h3 {
   content: "";
   position: absolute;
   bottom: -10px;
-  left: 15px;
+  left: 50%;
+  transform: translateX(-50%);
   border-width: 5px;
   border-style: solid;
   border-color: #555 transparent transparent transparent;
