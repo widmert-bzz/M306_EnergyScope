@@ -4,44 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f11c4528-de92-4d85-9e66-bf55574df8a7" name="Changes" comment="init 2">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20190411_093039_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU126576_-2095652250.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20190426_093054_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU130304_-941874069.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20190915_093227_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU154756_1291601611.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20191108_093155_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU163467_794248329.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20200109_093215_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU173940_837541372.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20200214_093234_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU180263_-1809898866.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20200705_093232_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU210068_-1157296515.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20200721_093116_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU213040_-598593013.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20201014_093801_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU232145_-1173868987.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20201025_093841_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU234388_-207467060.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20201110_094023_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU238085_-526705581.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/20220331_093121_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU373852_-1312619674.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20190314_eslevu_20190314090341.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20190403_eslevu_20190403050446.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20190731_eslevu_20190726150757.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20190903_eslevu_20190903090936.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200203_eslevu_20200203180205.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200303_eslevu_20200303050312.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200416_eslevu_20200416130455.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200503_eslevu_20200503050500.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200603_eslevu_20200603050605.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200703_eslevu_20200703050757.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20200903_eslevu_20200903050935.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20201003_eslevu_20201003051024.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20210303_eslevu_20210303050324.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/data/EdmRegisterWertExport_20210803_eslevu_20210803050846.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/20200214_093234_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU180263_-1809898866.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/20200705_093232_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU210068_-1157296515.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/EdmRegisterWertExport_20210803_eslevu_20210803050846.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/controller/ExportController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/controller/ExportController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/model/EnergyData.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/model/EnergyData.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/service/EnergyDataService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/service/EnergyDataService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/service/XmlParserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/ch/bzz/backend/service/XmlParserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/ch/bzz/backend/controller/ExportControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/ch/bzz/backend/controller/ExportControllerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/ch/bzz/backend/controller/UploadControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/ch/bzz/backend/controller/UploadControllerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.ts" afterDir="false" />
+    <list default="true" id="f11c4528-de92-4d85-9e66-bf55574df8a7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,16 +15,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GithubProjectSettings">
-    <option name="branchProtectionPatterns">
-      <list>
-        <option value="main" />
-      </list>
-    </option>
-  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "florian",
     "node.js.selected.package.tslint": "(autodetect)",
     "settings.editor.selected.configurable": "ml.llm.LLMThirdPartyAiProvidersConfigurable",
     "ts.external.directory.path": "C:\\Users\\widme\\IdeaProjects\\M306_EnergyScope\\frontend\\node_modules\\typescript\\lib"
