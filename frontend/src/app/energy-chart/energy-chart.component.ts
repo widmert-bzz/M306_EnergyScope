@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Chart, ChartConfiguration, ChartType } from 'chart.js/auto';
+import { Chart } from 'chart.js';
+import { ChartConfiguration, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 
 interface DataPoint {
@@ -31,6 +32,8 @@ interface SelectedDataTypes {
   styleUrls: ['./energy-chart.component.css']
 })
 export class EnergyChartComponent implements OnInit {
+  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+
   sensorData: SensorData[] = [];
   measurementsByType: MeasurementsByType = {};
   selectedSensor: string | null = null;
@@ -51,11 +54,16 @@ export class EnergyChartComponent implements OnInit {
 
   public lineChartOptions: ChartConfiguration['options'] = {
     responsive: true,
+    maintainAspectRatio: false,
     scales: {
       x: {
         title: {
           display: true,
           text: 'Timestamp'
+        },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45
         }
       },
       y: {
@@ -72,7 +80,12 @@ export class EnergyChartComponent implements OnInit {
       tooltip: {
         enabled: true
       }
-    }
+    },
+    interaction: {
+      mode: 'nearest',
+      intersect: false
+    },
+    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove']
   };
 
   public lineChartType: ChartType = 'line';
@@ -239,5 +252,10 @@ export class EnergyChartComponent implements OnInit {
         return date.toLocaleString();
       })
     };
+
+    // Update the chart if it exists
+    if (this.chart) {
+      this.chart.update();
+    }
   }
 }

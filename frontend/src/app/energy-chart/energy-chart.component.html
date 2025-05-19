@@ -48,7 +48,8 @@
 
   <div class="chart-container">
     <canvas baseChart
-      [data]="lineChartData"
+      [datasets]="lineChartData.datasets"
+      [labels]="lineChartData.labels"
       [options]="lineChartOptions"
       [type]="lineChartType">
     </canvas>
