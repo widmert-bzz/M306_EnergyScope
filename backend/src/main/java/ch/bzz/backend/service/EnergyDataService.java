@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +29,31 @@ public class EnergyDataService {
 
     /**
      * Save energy data to the database
+     * Checks for duplicates based on meterId and timestamp
      * @param energyDataList List of energy data to save
      * @return The saved energy data list
      */
     @Transactional
     public List<EnergyData> saveEnergyData(List<EnergyData> energyDataList) {
-        return energyDataRepository.saveAll(energyDataList);
+        List<EnergyData> uniqueEnergyDataList = new ArrayList<>();
+
+        for (EnergyData energyData : energyDataList) {
+            // Check if energy data with same meterId and timestamp already exists
+            EnergyData existingData = energyDataRepository.findByMeterIdAndTimestamp(
+                    energyData.getMeterId(), energyData.getTimestamp());
+
+            if (existingData == null) {
+                // No duplicate found, add to list to save
+                uniqueEnergyDataList.add(energyData);
+                log.info("Adding new energy data for meter {} at {}", 
+                        energyData.getMeterId(), energyData.getTimestamp());
+            } else {
+                log.info("Skipping duplicate energy data for meter {} at {}", 
+                        energyData.getMeterId(), energyData.getTimestamp());
+            }
+        }
+
+        return energyDataRepository.saveAll(uniqueEnergyDataList);
     }
 
     /**

@@ -12,6 +12,10 @@ import java.util.List;
 /**
  * Common model class for representing energy data
  * regardless of the source XML format
+ * 
+ * Note: The combination of meterId and timestamp should be unique
+ * to prevent duplicate datasets. The EnergyDataService checks for
+ * duplicates based on these fields when saving data.
  */
 @Data
 @Builder

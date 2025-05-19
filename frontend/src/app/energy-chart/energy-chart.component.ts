@@ -54,6 +54,11 @@ export class EnergyChartComponent implements OnInit {
 
   public lineChartOptions: ChartConfiguration['options'] = {
     responsive: true,
+    elements: {
+      line: {
+        spanGaps: true
+      }
+    },
     maintainAspectRatio: false,
     scales: {
       x: {
@@ -205,6 +210,7 @@ export class EnergyChartComponent implements OnInit {
         pointHoverBackgroundColor: '#fff',
         pointHoverBorderColor: 'rgba(40, 167, 69, 1)',
         fill: 'origin',
+        spanGaps: true,
       });
     }
 
@@ -214,7 +220,10 @@ export class EnergyChartComponent implements OnInit {
       this.measurementsByType.consumption.forEach(d => consumptionMap.set(d.ts, d.value));
 
       datasets.push({
-        data: filteredTimestamps.map(ts => consumptionMap.get(ts) || null),
+        data: filteredTimestamps.map(ts => {
+          const value = consumptionMap.get(ts);
+          return value !== undefined ? -value : null;
+        }),
         label: 'Consumption',
         backgroundColor: 'rgba(220, 53, 69, 0.2)',
         borderColor: 'rgba(220, 53, 69, 1)',
@@ -223,6 +232,7 @@ export class EnergyChartComponent implements OnInit {
         pointHoverBackgroundColor: '#fff',
         pointHoverBorderColor: 'rgba(220, 53, 69, 1)',
         fill: 'origin',
+        spanGaps: true,
       });
     }
 
@@ -241,6 +251,7 @@ export class EnergyChartComponent implements OnInit {
         pointHoverBackgroundColor: '#fff',
         pointHoverBorderColor: 'rgba(0, 123, 255, 1)',
         fill: 'origin',
+        spanGaps: true,
       });
     }
 
