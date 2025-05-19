@@ -33,9 +33,11 @@ public class UploadControllerTest {
 
     @Test
     public void testUploadFile() throws Exception {
-        // Load the test XML file
-        Resource resource = new ClassPathResource("20200214_093234_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU180263_-1809898866.xml");
+        // Load the test XML file from the main resources directory
+        Resource resource = new ClassPathResource("data/20200214_093234_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU180263_-1809898866.xml");
         byte[] content = Files.readAllBytes(resource.getFile().toPath());
+
+        System.out.println("[DEBUG_LOG] Loaded test file: " + resource.getFilename());
 
         // Create a mock multipart file
         MockMultipartFile file = new MockMultipartFile(
@@ -67,9 +69,11 @@ public class UploadControllerTest {
 
     @Test
     public void testUploadFileToStromzaehlerDaten() throws Exception {
-        // Load the test XML file
-        Resource resource = new ClassPathResource("20200214_093234_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU180263_-1809898866.xml");
+        // Load the test XML file from the main resources directory
+        Resource resource = new ClassPathResource("data/20200214_093234_12X-0000001216-O_E66_12X-LIPPUNEREM-T_ESLEVU180263_-1809898866.xml");
         byte[] content = Files.readAllBytes(resource.getFile().toPath());
+
+        System.out.println("[DEBUG_LOG] Loaded test file for StromzaehlerDaten: " + resource.getFilename());
 
         // Create a mock multipart file
         MockMultipartFile file = new MockMultipartFile(
