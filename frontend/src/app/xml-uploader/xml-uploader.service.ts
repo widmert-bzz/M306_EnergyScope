@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpEventType, HttpRequest } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { DataRefreshService } from '../shared/data-refresh.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,10 @@ export class XmlUploaderService {
   errorMessages$ = this.errorMessagesSubject.asObservable();
   overallProgress$ = this.overallProgressSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private dataRefreshService: DataRefreshService
+  ) {}
 
   // Getters for current values
   get parsedFiles(): { name: string; content: any }[] {
@@ -85,6 +89,8 @@ export class XmlUploaderService {
     this.clearData();
 
     let filesProcessed = 0;
+    const totalFiles = files.length;
+    const parsedFilesList: { name: string; content: any }[] = [];
 
     files.forEach(file => {
       const reader = new FileReader();
@@ -92,16 +98,27 @@ export class XmlUploaderService {
         const xmlString = reader.result as string;
         const parsedContent = this.parseXml(xmlString);
 
-        // Update parsed files
-        const currentFiles = this.parsedFiles;
-        currentFiles.push({ name: file.name, content: parsedContent });
-        this.parsedFilesSubject.next(currentFiles);
-
-        // Upload the file
-        this.uploadFile(file);
+        // Add to our local list
+        parsedFilesList.push({ name: file.name, content: parsedContent });
 
         // Check if all files have been processed
         filesProcessed++;
+
+        // Update parsed files immediately to display them
+        this.parsedFilesSubject.next([...parsedFilesList]);
+
+        // Only start uploading files after all files have been processed and displayed
+        if (filesProcessed === totalFiles) {
+          // Now start uploading all files
+          setTimeout(() => {
+            parsedFilesList.forEach(parsedFile => {
+              const fileToUpload = files.find(f => f.name === parsedFile.name);
+              if (fileToUpload) {
+                this.uploadFile(fileToUpload);
+              }
+            });
+          }, 0);
+        }
       };
       reader.readAsText(file);
     });
@@ -148,6 +165,9 @@ export class XmlUploaderService {
             const currentStatus = { ...this.uploadStatus };
             currentStatus[file.name] = 'success';
             this.uploadStatusSubject.next(currentStatus);
+
+            // Notify other components that data has been refreshed
+            this.dataRefreshService.refreshData();
           }
         },
         error: (error) => {

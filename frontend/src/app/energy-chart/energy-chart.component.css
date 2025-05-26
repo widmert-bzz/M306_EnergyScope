@@ -52,7 +52,7 @@ select {
 }
 
 .chart-container {
-  height: 350px;
+  height: 450px;
   margin-top: 20px;
   margin-left: 60px;
   margin-right: 60px;
@@ -121,6 +121,81 @@ select {
 
 .data-type-checkbox:nth-child(3) label {
   color: #007bff; /* Blue for Net */
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.export-controls {
+  display: flex;
+  justify-content: flex-end;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  gap: 15px;
+  z-index: 1000;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.reset-zoom-btn {
+  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.reset-zoom-btn:hover {
+  background-color: #0056b3;
+}
+
+.export-btn {
+  padding: 10px 18px;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-csv-btn {
+  background-color: #28a745;
+}
+
+.export-csv-btn:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.export-json-btn {
+  background-color: #17a2b8;
+}
+
+.export-json-btn:hover {
+  background-color: #138496;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.export-btn:disabled {
+  background-color: #6c757d;
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 @media (max-width: 768px) {

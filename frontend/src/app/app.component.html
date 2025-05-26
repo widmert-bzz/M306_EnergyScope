@@ -28,6 +28,7 @@
       <div class="overall-progress-container">
         <div class="overall-progress-bar" [style.width.%]="getOverallProgress()"></div>
         <div class="progress-percentage">{{ getOverallProgress() | number:'1.0-0' }}%</div>
+        <div class="file-counter">{{ getFileCount() }} Dateien</div>
       </div>
     </div>
 

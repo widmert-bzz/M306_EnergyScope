@@ -27,19 +27,19 @@
 
     <div class="control-group data-type-selection">
       <div class="data-type-checkbox">
-        <input type="checkbox" id="production" [(ngModel)]="selectedDataTypes.production" (change)="updateChart()">
+        <input type="checkbox" id="production" [(ngModel)]="selectedDataTypes.production" (change)="onDataTypeChange()">
         <label for="production">Production</label>
         <span class="data-type-description">Energy produced by the meter (green)</span>
       </div>
 
       <div class="data-type-checkbox">
-        <input type="checkbox" id="consumption" [(ngModel)]="selectedDataTypes.consumption" (change)="updateChart()">
+        <input type="checkbox" id="consumption" [(ngModel)]="selectedDataTypes.consumption" (change)="onDataTypeChange()">
         <label for="consumption">Consumption</label>
         <span class="data-type-description">Energy consumed by the meter (red)</span>
       </div>
 
       <div class="data-type-checkbox">
-        <input type="checkbox" id="net" [(ngModel)]="selectedDataTypes.net" (change)="updateChart()">
+        <input type="checkbox" id="net" [(ngModel)]="selectedDataTypes.net" (change)="onDataTypeChange()">
         <label for="net">Net</label>
         <span class="data-type-description">Net energy (production - consumption) (blue)</span>
       </div>
@@ -53,6 +53,13 @@
       [options]="lineChartOptions"
       [type]="lineChartType">
     </canvas>
+    <div class="chart-controls">
+      <button class="reset-zoom-btn" (click)="resetZoom()">Reset Zoom</button>
+    </div>
+    <div class="export-controls">
+      <button class="export-btn export-csv-btn" [disabled]="!hasDataToExport" (click)="exportAsCSV()">Export as CSV</button>
+      <button class="export-btn export-json-btn" [disabled]="!hasDataToExport" (click)="exportAsJSON()">Export as JSON</button>
+    </div>
   </div>
 
   <div *ngIf="sensorData.length === 0" class="no-data">

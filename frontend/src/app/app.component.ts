@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { XmlUploaderService } from './xml-uploader/xml-uploader.service';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { XmlUploaderComponent } from './xml-uploader/xml-uploader.component';
 import { SidebarService } from './shared/sidebar.service';
 
@@ -19,6 +19,11 @@ export class AppComponent implements OnInit, OnDestroy {
   uploadProgress: { [filename: string]: number } = {};
   startTimes: { [filename: string]: number } = {};
   uploadStartTime: number = 0; // Time when the first file started uploading
+
+  // Properties for interpolated progress
+  private interpolatedProgress: { [filename: string]: number } = {};
+  private readonly PROGRESS_INTERPOLATION_STEP = 1; // How much to increment per update
+  private readonly PROGRESS_UPDATE_INTERVAL = 50; // Update every 50ms for smoother animation
 
   // Properties for smoothing time estimates
   private lastEstimatedTime: number = 0; // Last calculated time in milliseconds
@@ -63,9 +68,40 @@ export class AppComponent implements OnInit, OnDestroy {
           if (progress[filename] > 0 && progress[filename] < 100 && !this.startTimes[filename]) {
             this.startTimes[filename] = Date.now();
           }
+
+          // Initialize interpolated progress for new files
+          if (this.interpolatedProgress[filename] === undefined) {
+            this.interpolatedProgress[filename] = 0;
+          }
         });
 
         this.uploadProgress = progress;
+      })
+    );
+
+    // Set up timer for smooth progress updates
+    this.subscriptions.push(
+      interval(this.PROGRESS_UPDATE_INTERVAL).subscribe(() => {
+        let updated = false;
+
+        // Update interpolated progress for each file
+        Object.keys(this.uploadProgress).forEach(filename => {
+          const target = this.uploadProgress[filename] || 0;
+          const current = this.interpolatedProgress[filename] || 0;
+
+          if (current < target) {
+            // Increment interpolated progress towards target
+            this.interpolatedProgress[filename] = Math.min(
+              current + this.PROGRESS_INTERPOLATION_STEP,
+              target
+            );
+            updated = true;
+          } else if (current > target) {
+            // If target decreased (unlikely), snap to it
+            this.interpolatedProgress[filename] = target;
+            updated = true;
+          }
+        });
       })
     );
   }
@@ -99,8 +135,14 @@ export class AppComponent implements OnInit, OnDestroy {
     const files = Object.keys(this.uploadProgress);
     if (files.length === 0) return 0;
 
-    const totalProgress = files.reduce((sum, filename) => sum + (this.uploadProgress[filename] || 0), 0);
+    // Use interpolated progress for smoother updates
+    const totalProgress = files.reduce((sum, filename) => sum + (this.interpolatedProgress[filename] || 0), 0);
     return Math.round(totalProgress / files.length);
+  }
+
+  // Get the total number of files being uploaded
+  getFileCount(): number {
+    return Object.keys(this.uploadStatus).length;
   }
 
   // Estimate the remaining time based on progress and elapsed time
