@@ -4,8 +4,28 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f11c4528-de92-4d85-9e66-bf55574df8a7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+    <list default="true" id="f11c4528-de92-4d85-9e66-bf55574df8a7" name="Changes" comment="init 4">
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID735_20190416_220000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID735_20190417_220000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID735_20190914_220000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID735_20200213_230000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID742_20190407_220000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID742_20190421_220000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID742_20191024_220000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID742_20191107_230000.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/data/energy-data/ID742_20200108_230000.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.component.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/app.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/app.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/energy-chart/energy-chart.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/xml-uploader/xml-uploader.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/xml-uploader/xml-uploader.service.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,16 +35,82 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "git-widget-placeholder": "florian",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "ml.llm.LLMThirdPartyAiProvidersConfigurable",
-    "ts.external.directory.path": "C:\\Users\\widme\\IdeaProjects\\M306_EnergyScope\\frontend\\node_modules\\typescript\\lib"
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "meierf2-bzz"
   }
 }]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/widmert-bzz/M306_EnergyScope.git",
+    "accountId": "815e078c-8970-483b-a9cc-3df529211192"
+  }
+}]]></component>
+  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="2xLcj2OxFehBoMAKSSLxas9adTh" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Batch.start_application.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "florian",
+    "junie.onboarding.icon.badge.shown": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.16091955",
+    "settings.editor.selected.configurable": "ml.llm.LLMThirdPartyAiProvidersConfigurable",
+    "ts.external.directory.path": "C:\\Users\\widme\\IdeaProjects\\M306_EnergyScope\\frontend\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.25410.129" />
+        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-IU-251.25410.129" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
+    <task id="LOCAL-00001" summary="init 4">
+      <option name="closed" value="true" />
+      <created>1747660642765</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1747660642765</updated>
+    </task>
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f11c4528-de92-4d85-9e66-bf55574df8a7" name="Changes" comment="init 4" />
+      <created>1747720928394</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1747720928394</updated>
+      <workItem from="1747720930790" duration="6031000" />
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="init 4" />
+    <option name="LAST_COMMIT_MESSAGE" value="init 4" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
