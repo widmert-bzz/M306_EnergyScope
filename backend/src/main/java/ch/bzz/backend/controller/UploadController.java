@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import ch.bzz.backend.model.EnergySensorData;
 
 /**
  * Controller for handling XML file uploads and retrieving energy data
@@ -67,6 +68,22 @@ public class UploadController {
             stromzaehlerDatenMap = localStorageService.saveStromzaehlerDaten(stromzaehlerDatenMap);
 
             return ResponseEntity.ok(stromzaehlerDatenMap);
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Endpoint for uploading and parsing multiple XML files to standardized JSON format
+     * @param files The XML files to parse (both ESL and SDAT formats)
+     * @return List of EnergySensorData objects with standardized format
+     */
+    @PostMapping("/upload/sensor-data")
+    public ResponseEntity<List<EnergySensorData>> uploadFilesToSensorData(@RequestParam("files") List<MultipartFile> files) {
+        try {
+            // Parse and process all XML files
+            List<EnergySensorData> sensorDataList = xmlParserService.processFilesToSensorData(files);
+            return ResponseEntity.ok(sensorDataList);
         } catch (IOException e) {
             return ResponseEntity.badRequest().build();
         }

@@ -4,8 +4,10 @@ import ch.bzz.backend.model.EnergyData;
 import ch.bzz.backend.model.Measurement;
 import ch.bzz.backend.model.Messwert;
 import ch.bzz.backend.model.StromzaehlerDaten;
+import ch.bzz.backend.model.EnergySensorData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -904,5 +907,423 @@ public class XmlParserServiceImpl implements XmlParserService {
         }
 
         log.debug("Finished calculating relative values");
+    }
+
+    /**
+     * Process multiple XML files (ESL and SDAT) and convert them to standardized EnergySensorData format
+     * This method combines data from different file formats and ensures time series consistency
+     *
+     * @param files List of multipart files to process
+     * @return List of EnergySensorData objects containing the processed and combined data in the required format
+     * @throws java.io.IOException If there is an error reading the files
+     */
+    @Override
+    public List<EnergySensorData> processFilesToSensorData(List<MultipartFile> files) throws IOException {
+        log.info("Processing {} XML files for standardized sensor data format", files.size());
+
+        // Maps to store the absolute meter values for each sensor ID
+        Map<String, TreeMap<LocalDateTime, Double>> sensorValues = new HashMap<>();
+        // Initialize maps for ID742 (consumption), ID735 (production) and 38157930 (device meter)
+        sensorValues.put("ID742", new TreeMap<>());
+        sensorValues.put("ID735", new TreeMap<>());
+        sensorValues.put("38157930", new TreeMap<>()); // Add support for the device meter
+
+        // Process ESL files first to get base values
+        log.info("Step 1: Processing ESL files for base values");
+        for (MultipartFile file : files) {
+            try (InputStream inputStream = file.getInputStream()) {
+                Document document = parseXmlDocument(inputStream);
+                String rootElement = document.getDocumentElement().getNodeName();
+
+                if (rootElement.equals("ESLBillingData")) {
+                    log.info("Processing ESL file: {}", file.getOriginalFilename());
+                    processEslFileForSensorData(document, sensorValues);
+                }
+            } catch (Exception e) {
+                // Continue with next file if this one fails
+                log.error("Error processing ESL file {}: {}", file.getOriginalFilename(), e.getMessage());
+            }
+        }
+        log.info("Completed processing ESL files. Found {} data points for ID742, {} for ID735, and {} for 38157930",
+                sensorValues.get("ID742").size(), sensorValues.get("ID735").size(), sensorValues.get("38157930").size());
+
+        // Process SDAT files to get interval data
+        log.info("Step 2: Processing SDAT files for interval data");
+        for (MultipartFile file : files) {
+            try (InputStream inputStream = file.getInputStream()) {
+                Document document = parseXmlDocument(inputStream);
+                String rootElement = document.getDocumentElement().getNodeName();
+
+                if (rootElement.contains("ValidatedMeteredData")) {
+                    log.info("Processing SDAT file: {}", file.getOriginalFilename());
+                    processSdatFileForSensorData(document, sensorValues);
+                }
+            } catch (Exception e) {
+                // Continue with next file if this one fails
+                log.error("Error processing SDAT file {}: {}", file.getOriginalFilename(), e.getMessage());
+            }
+        }
+        log.info("After SDAT processing: {} data points for ID742, {} for ID735, and {} for 38157930",
+                sensorValues.get("ID742").size(), sensorValues.get("ID735").size(), sensorValues.get("38157930").size());
+
+        // Convert the results to the required EnergySensorData format
+        List<EnergySensorData> result = new ArrayList<>();
+        for (String sensorId : sensorValues.keySet()) {
+            TreeMap<LocalDateTime, Double> values = sensorValues.get(sensorId);
+            if (!values.isEmpty()) {
+                EnergySensorData sensorData = createEnergySensorData(sensorId, values);
+                result.add(sensorData);
+                log.info("Created EnergySensorData for {} with {} data points", sensorId, sensorData.getData().size());
+            } else {
+                log.warn("No data points found for sensor ID {}", sensorId);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Helper method to parse an XML document from an input stream
+     *
+     * @param inputStream The input stream to parse
+     * @return The parsed XML document
+     * @throws ParserConfigurationException If there is an error with the parser configuration
+     * @throws SAXException If there is an error parsing the XML
+     * @throws IOException If there is an error reading the input stream
+     */
+    private Document parseXmlDocument(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(inputStream);
+        document.getDocumentElement().normalize();
+        return document;
+    }
+
+    /**
+     * Process an ESL format XML document for sensor data
+     *
+     * @param document The XML document to parse
+     * @param sensorValues Map to store the parsed values by sensor ID
+     */
+    private void processEslFileForSensorData(Document document, Map<String, TreeMap<LocalDateTime, Double>> sensorValues) {
+        log.debug("Processing ESL format for sensor data");
+
+        // Maps to store Hochtarif and Niedertarif values temporarily
+        Map<LocalDateTime, Double> bezugHochtarif = new HashMap<>();
+        Map<LocalDateTime, Double> bezugNiedertarif = new HashMap<>();
+        Map<LocalDateTime, Double> einspeisungHochtarif = new HashMap<>();
+        Map<LocalDateTime, Double> einspeisungNiedertarif = new HashMap<>();
+
+        NodeList meterNodes = document.getElementsByTagName("Meter");
+        for (int i = 0; i < meterNodes.getLength(); i++) {
+            Element meterElement = (Element) meterNodes.item(i);
+            String meterId = meterElement.getAttribute("factoryNo");
+            log.debug("Processing meter with ID: {}", meterId);
+
+            // Get values TreeMap for the device meter if the ID matches
+            TreeMap<LocalDateTime, Double> deviceMeterValues = null;
+            if (meterId.equals("38157930")) {
+                deviceMeterValues = sensorValues.get(meterId);
+                log.debug("Found device meter with ID: {}", meterId);
+            }
+
+            NodeList timePeriodNodes = meterElement.getElementsByTagName("TimePeriod");
+            for (int j = 0; j < timePeriodNodes.getLength(); j++) {
+                Element timePeriodElement = (Element) timePeriodNodes.item(j);
+                String endTimeStr = timePeriodElement.getAttribute("end");
+
+                try {
+                    LocalDateTime timestamp = LocalDateTime.parse(endTimeStr, DATE_TIME_FORMATTER);
+
+                    NodeList valueRowNodes = timePeriodElement.getElementsByTagName("ValueRow");
+                    for (int k = 0; k < valueRowNodes.getLength(); k++) {
+                        Element valueRowElement = (Element) valueRowNodes.item(k);
+                        String obis = valueRowElement.getAttribute("obis");
+                        String valueStr = valueRowElement.getAttribute("value");
+
+                        try {
+                            double value = Double.parseDouble(valueStr);
+
+                            // Use valueTimeStamp if available, otherwise use endTime
+                            if (valueRowElement.hasAttribute("valueTimeStamp")) {
+                                String valueTimeStr = valueRowElement.getAttribute("valueTimeStamp");
+                                timestamp = LocalDateTime.parse(valueTimeStr, DATE_TIME_FORMATTER);
+                            }
+
+                            // Store values in the appropriate map based on OBIS code
+                            if (obis.equals("1-1:1.8.1")) { // Bezug Hochtarif
+                                bezugHochtarif.put(timestamp, value);
+                                log.debug("Found Bezug Hochtarif at {}: {}", timestamp, value);
+                            } else if (obis.equals("1-1:1.8.2")) { // Bezug Niedertarif
+                                bezugNiedertarif.put(timestamp, value);
+                                log.debug("Found Bezug Niedertarif at {}: {}", timestamp, value);
+                            } else if (obis.equals("1-1:2.8.1")) { // Einspeisung Hochtarif
+                                einspeisungHochtarif.put(timestamp, value);
+                                log.debug("Found Einspeisung Hochtarif at {}: {}", timestamp, value);
+                            } else if (obis.equals("1-1:2.8.2")) { // Einspeisung Niedertarif
+                                einspeisungNiedertarif.put(timestamp, value);
+                                log.debug("Found Einspeisung Niedertarif at {}: {}", timestamp, value);
+                            }
+
+                            // If this is the device meter, store values directly
+                            if (deviceMeterValues != null) {
+                                // For simplicity, store all values for the device meter
+                                // Alternatively, you could filter by specific OBIS codes
+                                deviceMeterValues.put(timestamp, value);
+                                log.debug("Added device meter value for {} at {}: {} (OBIS: {})",
+                                    meterId, timestamp, value, obis);
+                            }
+                        } catch (NumberFormatException e) {
+                            log.warn("Invalid value format for OBIS {}: {}", obis, valueStr, e);
+                        } catch (Exception e) {
+                            log.warn("Error processing value row with OBIS {}", obis, e);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Error processing time period with end time {}", endTimeStr, e);
+                }
+            }
+        }
+
+        // Calculate combined values and add them to the sensorValues map
+        TreeMap<LocalDateTime, Double> id742Values = sensorValues.get("ID742"); // Bezug (consumption)
+        TreeMap<LocalDateTime, Double> id735Values = sensorValues.get("ID735"); // Einspeisung (production)
+
+        // Process bezug (consumption) values for ID742
+        for (Map.Entry<LocalDateTime, Double> entry : bezugHochtarif.entrySet()) {
+            LocalDateTime timestamp = entry.getKey();
+            double hochtarifValue = entry.getValue();
+            double niedertarifValue = bezugNiedertarif.getOrDefault(timestamp, 0.0);
+            double combinedValue = hochtarifValue + niedertarifValue;
+
+            id742Values.put(timestamp, combinedValue);
+            log.debug("Added combined Bezug value for ID742 at {}: {}", timestamp, combinedValue);
+        }
+
+        // Process einspeisung (production) values for ID735
+        for (Map.Entry<LocalDateTime, Double> entry : einspeisungHochtarif.entrySet()) {
+            LocalDateTime timestamp = entry.getKey();
+            double hochtarifValue = entry.getValue();
+            double niedertarifValue = einspeisungNiedertarif.getOrDefault(timestamp, 0.0);
+            double combinedValue = hochtarifValue + niedertarifValue;
+
+            id735Values.put(timestamp, combinedValue);
+            log.debug("Added combined Einspeisung value for ID735 at {}: {}", timestamp, combinedValue);
+        }
+
+        // Add niedertarif-only entries if they exist
+        for (Map.Entry<LocalDateTime, Double> entry : bezugNiedertarif.entrySet()) {
+            LocalDateTime timestamp = entry.getKey();
+            if (!bezugHochtarif.containsKey(timestamp)) {
+                id742Values.put(timestamp, entry.getValue());
+                log.debug("Added Niedertarif-only Bezug value for ID742 at {}: {}", timestamp, entry.getValue());
+            }
+        }
+
+        for (Map.Entry<LocalDateTime, Double> entry : einspeisungNiedertarif.entrySet()) {
+            LocalDateTime timestamp = entry.getKey();
+            if (!einspeisungHochtarif.containsKey(timestamp)) {
+                id735Values.put(timestamp, entry.getValue());
+                log.debug("Added Niedertarif-only Einspeisung value for ID735 at {}: {}", timestamp, entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Process a SDAT format XML document for sensor data
+     *
+     * @param document The XML document to parse
+     * @param sensorValues Map to store the parsed values by sensor ID
+     */
+    private void processSdatFileForSensorData(Document document, Map<String, TreeMap<LocalDateTime, Double>> sensorValues) {
+        log.debug("Processing SDAT format for sensor data");
+
+        // Extract DocumentID to determine the sensorId
+        String sensorId = "";
+        NodeList documentIdNodes = document.getElementsByTagName("rsm:DocumentID");
+        if (documentIdNodes.getLength() > 0) {
+            String fullDocumentId = documentIdNodes.item(0).getTextContent();
+            if (fullDocumentId.contains("_ID")) {
+                sensorId = fullDocumentId.substring(fullDocumentId.lastIndexOf("_") + 1);
+                log.debug("Extracted sensor ID from DocumentID: {}", sensorId);
+            }
+        }
+
+        // Skip if sensorId is not one of our target IDs
+        if (!sensorId.equals("ID742") && !sensorId.equals("ID735")) {
+            log.warn("SensorId {} is not one of the expected IDs (ID742 or ID735), trying to determine from data type", sensorId);
+            // Attempt to determine from data type if not found in document ID
+            sensorId = "";
+        }
+
+        NodeList meteringDataNodes = document.getElementsByTagName("rsm:MeteringData");
+        for (int i = 0; i < meteringDataNodes.getLength(); i++) {
+            Element meteringDataElement = (Element) meteringDataNodes.item(i);
+
+            try {
+                // Check if it's production or consumption data to determine sensorId if not already set
+                boolean isProduction = meteringDataElement.getElementsByTagName("rsm:ProductionMeteringPoint").getLength() > 0;
+                boolean isConsumption = meteringDataElement.getElementsByTagName("rsm:ConsumptionMeteringPoint").getLength() > 0;
+
+                // If sensorId is not already set, determine it from the data type
+                if (sensorId.isEmpty()) {
+                    if (isProduction) {
+                        sensorId = "ID735"; // Production data maps to ID735
+                    } else if (isConsumption) {
+                        sensorId = "ID742"; // Consumption data maps to ID742
+                    } else {
+                        log.warn("Could not determine sensor ID for metering data at index {}, skipping", i);
+                        continue;
+                    }
+                }
+
+                TreeMap<LocalDateTime, Double> sensorDataPoints = sensorValues.get(sensorId);
+                if (sensorDataPoints == null) {
+                    log.warn("No data map found for sensor ID {}, skipping", sensorId);
+                    continue;
+                }
+
+                // Get interval information
+                Element intervalElement = (Element) meteringDataElement.getElementsByTagName("rsm:Interval").item(0);
+                if (intervalElement == null) {
+                    log.warn("No interval element found for metering data node {}, skipping", i);
+                    continue;
+                }
+
+                String startTimeStr = getTextContent(intervalElement, "rsm:StartDateTime");
+                LocalDateTime startTime;
+                try {
+                    startTime = LocalDateTime.parse(startTimeStr, DATE_TIME_FORMATTER);
+                } catch (Exception e) {
+                    log.warn("Invalid start time format: {}, skipping", startTimeStr, e);
+                    continue;
+                }
+
+                // Get resolution
+                Element resolutionElement = (Element) meteringDataElement.getElementsByTagName("rsm:Resolution").item(0);
+                if (resolutionElement == null) {
+                    log.warn("No resolution element found for metering data node {}, skipping", i);
+                    continue;
+                }
+
+                int resolution;
+                try {
+                    resolution = Integer.parseInt(getTextContent(resolutionElement, "rsm:Resolution"));
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid resolution format, skipping metering data", e);
+                    continue;
+                }
+
+                // Find the base value for this day
+                LocalDateTime dayStart = startTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
+
+                // Look for base value (the latest absolute value before this day's start)
+                Double baseValue = null;
+                Map.Entry<LocalDateTime, Double> baseEntry = sensorDataPoints.floorEntry(dayStart);
+                if (baseEntry != null) {
+                    baseValue = baseEntry.getValue();
+                    log.debug("Found base value for {} at {}: {}", sensorId, baseEntry.getKey(), baseValue);
+                } else {
+                    // Look for the earliest value in this day as a fallback
+                    baseEntry = sensorDataPoints.ceilingEntry(dayStart);
+                    if (baseEntry != null && baseEntry.getKey().toLocalDate().equals(dayStart.toLocalDate())) {
+                        baseValue = baseEntry.getValue();
+                        log.debug("Using same day earliest value for {} as base: {}", sensorId, baseValue);
+                    }
+                }
+
+                // If no base value is found, use 0 as fallback
+                if (baseValue == null) {
+                    baseValue = 0.0;
+                    log.warn("No base value found for {}, using 0 as fallback", sensorId);
+                }
+
+                // Process observations
+                NodeList observationNodes = meteringDataElement.getElementsByTagName("rsm:Observation");
+
+                // Keep track of cumulative value
+                double cumulativeValue = baseValue;
+
+                // Sort observations by sequence
+                Map<Integer, Element> sortedObservations = new TreeMap<>();
+                for (int j = 0; j < observationNodes.getLength(); j++) {
+                    Element observationElement = (Element) observationNodes.item(j);
+                    Element positionElement = (Element) observationElement.getElementsByTagName("rsm:Position").item(0);
+                    if (positionElement == null) continue;
+
+                    try {
+                        int sequence = Integer.parseInt(getTextContent(positionElement, "rsm:Sequence"));
+                        sortedObservations.put(sequence, observationElement);
+                    } catch (NumberFormatException e) {
+                        log.warn("Invalid sequence format in observation", e);
+                    }
+                }
+
+                // Process observations in sequence order
+                for (Map.Entry<Integer, Element> entry : sortedObservations.entrySet()) {
+                    int sequence = entry.getKey();
+                    Element observationElement = entry.getValue();
+
+                    try {
+                        String volumeStr = getTextContent(observationElement, "rsm:Volume");
+                        double volume = Double.parseDouble(volumeStr);
+
+                        // Calculate timestamp for this observation
+                        LocalDateTime timestamp = startTime.plusMinutes((sequence - 1) * resolution);
+
+                        // Add volume to cumulative value
+                        cumulativeValue += volume;
+
+                        // Check if we already have an absolute value at this timestamp from an ESL file
+                        if (!sensorDataPoints.containsKey(timestamp)) {
+                            // Only add if not already present (ESL values take precedence)
+                            sensorDataPoints.put(timestamp, cumulativeValue);
+                            log.debug("Added accumulated value for {} at {}: {}", sensorId, timestamp, cumulativeValue);
+                        } else {
+                            // If ESL value exists, use it to realign our cumulative calculation
+                            double eslValue = sensorDataPoints.get(timestamp);
+                            cumulativeValue = eslValue;
+                            log.debug("Found existing ESL value for {} at {}: {}, realigning cumulative value",
+                                    sensorId, timestamp, eslValue);
+                        }
+                    } catch (NumberFormatException e) {
+                        log.warn("Invalid volume format in observation", e);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error processing metering data node {}", i, e);
+            }
+        }
+    }
+
+    /**
+     * Create an EnergySensorData object from a map of timestamp to value
+     *
+     * @param sensorId The sensor ID
+     * @param values The map of timestamp to value
+     * @return The EnergySensorData object
+     */
+    private EnergySensorData createEnergySensorData(String sensorId, TreeMap<LocalDateTime, Double> values) {
+        EnergySensorData sensorData = new EnergySensorData();
+        sensorData.setSensorId(sensorId);
+
+        List<EnergySensorData.DataPoint> dataPoints = new ArrayList<>();
+
+        for (Map.Entry<LocalDateTime, Double> entry : values.entrySet()) {
+            LocalDateTime timestamp = entry.getKey();
+            Double value = entry.getValue();
+
+            // Convert LocalDateTime to UTC seconds since epoch
+            long epochSeconds = timestamp.toInstant(ZoneOffset.UTC).getEpochSecond();
+
+            EnergySensorData.DataPoint dataPoint = new EnergySensorData.DataPoint();
+            dataPoint.setTs(String.valueOf(epochSeconds));
+            dataPoint.setValue(value);
+
+            dataPoints.add(dataPoint);
+        }
+
+        sensorData.setData(dataPoints);
+        return sensorData;
     }
 }
