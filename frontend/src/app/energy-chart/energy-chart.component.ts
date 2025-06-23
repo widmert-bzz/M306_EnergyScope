@@ -44,12 +44,34 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
   selectedSensor: string | null = null;
   availableSensors: string[] = [];
   availableTimestamps: string[] = [];
-  selectedTimestampRange: { start: string, end: string } = { start: '', end: '' };
+  selectedTimestampRange: {
+    start: string,
+    end: string,
+    startDate: string,
+    endDate: string,
+    startDateDisplay: string,
+    endDateDisplay: string,
+    startHour: any,
+    endHour: any
+  } = {
+    start: '',
+    end: '',
+    startDate: '',
+    endDate: '',
+    startDateDisplay: '',
+    endDateDisplay: '',
+    startHour: '0',
+    endHour: '23'
+  };
+
   selectedDataTypes: SelectedDataTypes = {
     production: true,
     consumption: true,
     net: true
   };
+
+  // Property to control hour input visibility
+  hourInputEnabled: boolean = false;
 
   // Property to check if data is available for export
   get hasDataToExport(): boolean {
@@ -76,7 +98,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
       x: {
         title: {
           display: true,
-          text: 'Timestamp'
+          text: 'Zeitstempel'
         },
         ticks: {
           maxRotation: 45,
@@ -86,7 +108,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
       y: {
         title: {
           display: true,
-          text: 'Value'
+          text: 'Wert'
         },
         ticks: {
           callback: function(value: number, index: number, values: any[]) {
@@ -174,6 +196,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
     );
   }
 
+
   loadData(): void {
     // First load the list of sensors
     this.http.get<SensorData[]>('http://localhost:8080/export/json')
@@ -225,8 +248,66 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
       if (this.availableTimestamps.length > 0) {
         this.selectedTimestampRange.start = this.availableTimestamps[0];
         this.selectedTimestampRange.end = this.availableTimestamps[this.availableTimestamps.length - 1];
+
+        // Extract hours from the timestamps
+        const startDate = new Date(this.selectedTimestampRange.start);
+        const endDate = new Date(this.selectedTimestampRange.end);
+
+        // Set hours
+        this.selectedTimestampRange.startHour = startDate.getHours().toString();
+        this.selectedTimestampRange.endHour = endDate.getHours().toString();
+
+        // Convert ISO strings to date format (YYYY-MM-DD)
+        this.selectedTimestampRange.startDate = this.formatDateForInput(startDate);
+        this.selectedTimestampRange.endDate = this.formatDateForInput(endDate);
+
+        // Set date display values
+        this.selectedTimestampRange.startDateDisplay = this.formatDateForDisplay(startDate);
+        this.selectedTimestampRange.endDateDisplay = this.formatDateForDisplay(endDate);
+
+        // Reset hour input enabled state to false when changing sensors
+        this.hourInputEnabled = false;
       }
     }
+  }
+
+  // Helper method to format Date objects for display
+  private formatDateForDisplay(date: Date): string {
+    // Format: DD/MM/YYYY
+    return this.padZero(date.getDate()) + '/' +
+           this.padZero(date.getMonth() + 1) + '/' +
+           date.getFullYear();
+  }
+
+
+  // Handle date changes
+  onStartDateChange(): void {
+    if (this.selectedTimestampRange.startDate) {
+      const date = new Date(this.selectedTimestampRange.startDate);
+      this.selectedTimestampRange.startDateDisplay = this.formatDateForDisplay(date);
+      this.onTimestampRangeChange();
+    }
+  }
+
+  onEndDateChange(): void {
+    if (this.selectedTimestampRange.endDate) {
+      const date = new Date(this.selectedTimestampRange.endDate);
+      this.selectedTimestampRange.endDateDisplay = this.formatDateForDisplay(date);
+      this.onTimestampRangeChange();
+    }
+  }
+
+  // Helper method to format Date objects for date input
+  private formatDateForInput(date: Date): string {
+    // Format: YYYY-MM-DD
+    return date.getFullYear() + '-' +
+           this.padZero(date.getMonth() + 1) + '-' +
+           this.padZero(date.getDate());
+  }
+
+  // Helper method to pad single digits with leading zero
+  private padZero(num: number): string {
+    return num < 10 ? '0' + num : num.toString();
   }
 
   onSensorChange(): void {
@@ -235,6 +316,51 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
   }
 
   onTimestampRangeChange(): void {
+    // Combine date and hour values to create full timestamps
+    if (this.selectedTimestampRange.startDate) {
+      // Create a date object from the date string
+      const startDate = new Date(this.selectedTimestampRange.startDate);
+
+      // Parse hour value from the text input
+      const startHour = parseInt(this.selectedTimestampRange.startHour, 10);
+
+      // Validate hour value (0-23)
+      const validStartHour = isNaN(startHour) ? 0 : Math.max(0, Math.min(23, startHour));
+
+      // Update the hour value if it was invalid
+      if (validStartHour.toString() !== this.selectedTimestampRange.startHour) {
+        this.selectedTimestampRange.startHour = validStartHour.toString();
+      }
+
+      // Set the hour from the hour input, and reset minutes and seconds to 0
+      startDate.setHours(validStartHour, 0, 0);
+
+      // Convert to ISO string
+      this.selectedTimestampRange.start = startDate.toISOString();
+    }
+
+    if (this.selectedTimestampRange.endDate) {
+      // Create a date object from the date string
+      const endDate = new Date(this.selectedTimestampRange.endDate);
+
+      // Parse hour value from the text input
+      const endHour = parseInt(this.selectedTimestampRange.endHour, 10);
+
+      // Validate hour value (0-23)
+      const validEndHour = isNaN(endHour) ? 23 : Math.max(0, Math.min(23, endHour));
+
+      // Update the hour value if it was invalid
+      if (validEndHour.toString() !== this.selectedTimestampRange.endHour) {
+        this.selectedTimestampRange.endHour = validEndHour.toString();
+      }
+
+      // Set the hour from the hour input, and set minutes and seconds to 59:59 to include the full hour
+      endDate.setHours(validEndHour, 59, 59);
+
+      // Convert to ISO string
+      this.selectedTimestampRange.end = endDate.toISOString();
+    }
+
     // Delay chart update to ensure all data is processed
     setTimeout(() => {
       this.updateChart();
@@ -264,7 +390,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
     if (!this.hasDataToExport) return;
 
     // Create CSV content
-    const headers = ['Timestamp'];
+    const headers = ['Zeitstempel'];
     const datasets = this.lineChartData.datasets;
     const labels = this.lineChartData.labels as string[];
 
@@ -312,27 +438,27 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
     // Create JSON structure
     const jsonData: any = {
       sensor: this.selectedSensor,
-      exportDate: new Date().toISOString(),
-      timeRange: {
+      exportDatum: new Date().toISOString(),
+      zeitbereich: {
         start: this.selectedTimestampRange.start,
-        end: this.selectedTimestampRange.end
+        ende: this.selectedTimestampRange.end
       },
-      data: []
+      daten: []
     };
 
     // For each timestamp (label)
     for (let i = 0; i < labels.length; i++) {
       const dataPoint: any = {
-        timestamp: labels[i]
+        zeitstempel: labels[i]
       };
 
       // Add value from each dataset for this timestamp
       for (let j = 0; j < datasets.length; j++) {
-        const datasetLabel = datasets[j].label || 'unknown';
+        const datasetLabel = datasets[j].label || 'unbekannt';
         dataPoint[datasetLabel] = datasets[j].data[i];
       }
 
-      jsonData.data.push(dataPoint);
+      jsonData.daten.push(dataPoint);
     }
 
     // Convert to JSON string
@@ -347,9 +473,9 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
 
   // Helper method to generate filename
   private generateFilename(extension: string): string {
-    const sensorPart = this.selectedSensor ? this.selectedSensor.replace(/[^a-zA-Z0-9]/g, '_') : 'unknown';
+    const sensorPart = this.selectedSensor ? this.selectedSensor.replace(/[^a-zA-Z0-9]/g, '_') : 'unbekannt';
     const datePart = new Date().toISOString().split('T')[0];
-    return `energy_data_${sensorPart}_${datePart}.${extension}`;
+    return `energiedaten_${sensorPart}_${datePart}.${extension}`;
   }
 
   // Helper method to download file
@@ -409,7 +535,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
 
       datasets.push({
         data: filteredTimestamps.map(ts => productionMap.get(ts) || null),
-        label: 'Production',
+        label: 'Produktion',
         backgroundColor: 'rgba(40, 167, 69, 0.2)',
         borderColor: 'rgba(40, 167, 69, 1)',
         pointRadius: 0,
@@ -429,7 +555,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
           const value = consumptionMap.get(ts);
           return value !== undefined ? -value : null;
         }),
-        label: 'Consumption',
+        label: 'Verbrauch',
         backgroundColor: 'rgba(220, 53, 69, 0.2)',
         borderColor: 'rgba(220, 53, 69, 1)',
         pointRadius: 0,
@@ -445,7 +571,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
 
       datasets.push({
         data: filteredTimestamps.map(ts => netMap.get(ts) || null),
-        label: 'Net',
+        label: 'Netto',
         backgroundColor: 'rgba(0, 123, 255, 0.2)',
         borderColor: 'rgba(0, 123, 255, 1)',
         pointRadius: 0,
@@ -459,7 +585,7 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
       datasets: datasets,
       labels: filteredTimestamps.map(ts => {
         const date = new Date(ts);
-        return date.toLocaleString();
+        return date.toLocaleString('de-DE');
       })
     };
 

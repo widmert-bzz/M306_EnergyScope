@@ -1,68 +1,72 @@
 <div class="energy-chart-container">
-  <h2>Energy Data Visualization</h2>
+  <h2>Energiedaten-Visualisierung</h2>
 
   <div class="controls">
     <div class="control-group">
-      <label for="sensor-select">Select Sensor:</label>
+      <label for="sensor-select">Sensor auswählen:</label>
       <select id="sensor-select" [(ngModel)]="selectedSensor" (change)="onSensorChange()">
         <option *ngFor="let sensor of availableSensors" [value]="sensor">{{ sensor }}</option>
       </select>
     </div>
 
     <div class="control-group timestamp-range">
-      <div>
-        <label for="start-timestamp">Start Timestamp:</label>
-        <select id="start-timestamp" [(ngModel)]="selectedTimestampRange.start" (change)="onTimestampRangeChange()">
-          <option *ngFor="let ts of availableTimestamps" [value]="ts">{{ ts | date:'medium' }}</option>
-        </select>
+      <div class="date-picker-container">
+        <label for="start-timestamp">Startdatum:</label>
+        <input type="date" id="start-timestamp" [(ngModel)]="selectedTimestampRange.startDate"
+               (change)="onStartDateChange()">
       </div>
+    </div>
 
-      <div>
-        <label for="end-timestamp">End Timestamp:</label>
-        <select id="end-timestamp" [(ngModel)]="selectedTimestampRange.end" (change)="onTimestampRangeChange()">
-          <option *ngFor="let ts of availableTimestamps" [value]="ts">{{ ts | date:'medium' }}</option>
-        </select>
+    <div class="control-group">
+      <div class="date-picker-container">
+        <label for="end-timestamp">Enddatum:</label>
+        <input type="date" id="end-timestamp" [(ngModel)]="selectedTimestampRange.endDate" (change)="onEndDateChange()">
       </div>
     </div>
 
     <div class="control-group data-type-selection">
       <div class="data-type-checkbox">
         <input type="checkbox" id="production" [(ngModel)]="selectedDataTypes.production" (change)="onDataTypeChange()">
-        <label for="production">Production</label>
-        <span class="data-type-description">Energy produced by the meter (green)</span>
+        <label for="production">Produktion</label>
+        <span class="data-type-description">Vom Zähler produzierte Energie (grün)</span>
       </div>
 
       <div class="data-type-checkbox">
-        <input type="checkbox" id="consumption" [(ngModel)]="selectedDataTypes.consumption" (change)="onDataTypeChange()">
-        <label for="consumption">Consumption</label>
-        <span class="data-type-description">Energy consumed by the meter (red)</span>
+        <input type="checkbox" id="consumption" [(ngModel)]="selectedDataTypes.consumption"
+               (change)="onDataTypeChange()">
+        <label for="consumption">Verbrauch</label>
+        <span class="data-type-description">Vom Zähler verbrauchte Energie (rot)</span>
       </div>
 
       <div class="data-type-checkbox">
         <input type="checkbox" id="net" [(ngModel)]="selectedDataTypes.net" (change)="onDataTypeChange()">
-        <label for="net">Net</label>
-        <span class="data-type-description">Net energy (production - consumption) (blue)</span>
+        <label for="net">Netto</label>
+        <span class="data-type-description">Nettoenergie (Produktion - Verbrauch) (blau)</span>
       </div>
     </div>
   </div>
 
   <div class="chart-container">
     <canvas baseChart
-      [datasets]="lineChartData.datasets"
-      [labels]="lineChartData.labels"
-      [options]="lineChartOptions"
-      [type]="lineChartType">
+            [datasets]="lineChartData.datasets"
+            [labels]="lineChartData.labels"
+            [options]="lineChartOptions"
+            [type]="lineChartType">
     </canvas>
     <div class="chart-controls">
-      <button class="reset-zoom-btn" (click)="resetZoom()">Reset Zoom</button>
+      <button class="reset-zoom-btn" (click)="resetZoom()">Zoom zurücksetzen</button>
     </div>
     <div class="export-controls">
-      <button class="export-btn export-csv-btn" [disabled]="!hasDataToExport" (click)="exportAsCSV()">Export as CSV</button>
-      <button class="export-btn export-json-btn" [disabled]="!hasDataToExport" (click)="exportAsJSON()">Export as JSON</button>
+      <button class="export-btn export-csv-btn" [disabled]="!hasDataToExport" (click)="exportAsCSV()">Als CSV
+        exportieren
+      </button>
+      <button class="export-btn export-json-btn" [disabled]="!hasDataToExport" (click)="exportAsJSON()">Als JSON
+        exportieren
+      </button>
     </div>
   </div>
 
   <div *ngIf="sensorData.length === 0" class="no-data">
-    <p>No data available. Please upload XML files first.</p>
+    <p>Keine Daten verfügbar. Bitte laden Sie zuerst XML-Dateien hoch.</p>
   </div>
 </div>
