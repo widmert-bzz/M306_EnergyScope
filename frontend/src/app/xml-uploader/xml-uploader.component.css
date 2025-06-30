@@ -18,7 +18,7 @@ input[type="file"] {
 .custom-file-upload {
   display: inline-block;
   padding: 12px 24px;
-  background-color: #007bff;
+  background-color: #238a3b;
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -31,7 +31,7 @@ input[type="file"] {
 }
 
 .custom-file-upload:hover {
-  background-color: #0056b3;
+  background-color: #137a2b;
   transform: scale(1.05);
 }
 

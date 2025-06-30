@@ -165,11 +165,11 @@ input[type="date"] {
 
 /* Color indicators for data types */
 .data-type-checkbox:nth-child(1) label {
-  color: #28a745; /* Green for Production */
+  color: #238a3b; /* Green for Production */
 }
 
 .data-type-checkbox:nth-child(2) label {
-  color: #dc3545; /* Red for Consumption */
+  color: #f05c33; /* Red for Consumption */
 }
 
 .data-type-checkbox:nth-child(3) label {
@@ -224,11 +224,11 @@ input[type="date"] {
 }
 
 .export-csv-btn {
-  background-color: #28a745;
+  background-color: #238a3b;
 }
 
 .export-csv-btn:hover {
-  background-color: #218838;
+  background-color: #137a2b;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }

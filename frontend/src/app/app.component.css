@@ -136,7 +136,7 @@
 
 .overall-progress-bar {
   height: 100%;
-  background-color: #28a745; /* Changed to green for better visibility */
+  background-color: #238a3b; /* Changed to green for better visibility */
   border-radius: 8px;
   transition: width 0.8s ease; /* Slowed down the transition for more noticeable filling */
   background-image: linear-gradient(45deg,
