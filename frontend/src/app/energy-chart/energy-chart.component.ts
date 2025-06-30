@@ -273,9 +273,9 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
 
   // Helper method to format Date objects for display
   private formatDateForDisplay(date: Date): string {
-    // Format: DD/MM/YYYY
-    return this.padZero(date.getDate()) + '/' +
-           this.padZero(date.getMonth() + 1) + '/' +
+     // Format: DD.MM.YYYY
+    return this.padZero(date.getDate()) + '.' +
+           this.padZero(date.getMonth() + 1) + '.' +
            date.getFullYear();
   }
 
@@ -585,7 +585,16 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
       datasets: datasets,
       labels: filteredTimestamps.map(ts => {
         const date = new Date(ts);
-        return date.toLocaleString('de-DE');
+        // Format date as dd.mm.yyyy, optionally add time if needed
+        if (this.hourInputEnabled) {
+          // Include time when hour input is enabled
+          return this.formatDateForDisplay(date) + ' ' +
+                 this.padZero(date.getHours()) + ':' +
+                 this.padZero(date.getMinutes());
+        } else {
+          // Just show the date in dd.mm.yyyy format
+          return this.formatDateForDisplay(date);
+        }
       })
     };
 
