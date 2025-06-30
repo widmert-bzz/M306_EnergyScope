@@ -536,8 +536,8 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
       datasets.push({
         data: filteredTimestamps.map(ts => productionMap.get(ts) || null),
         label: 'Produktion',
-        backgroundColor: 'rgba(40, 167, 69, 0.2)',
-        borderColor: 'rgba(40, 167, 69, 1)',
+        backgroundColor: 'rgba(35,138,59, 0.2)',
+        borderColor: 'rgb(35,138,59)',
         pointRadius: 0,
         pointHoverBorderColor: 'rgba(40, 167, 69, 1)',
         fill: 'origin',
@@ -556,8 +556,8 @@ export class EnergyChartComponent implements OnInit, OnDestroy {
           return value !== undefined ? -value : null;
         }),
         label: 'Verbrauch',
-        backgroundColor: 'rgba(220, 53, 69, 0.2)',
-        borderColor: 'rgba(220, 53, 69, 1)',
+        backgroundColor: 'rgba(240,92,50, 0.2)',
+        borderColor: 'rgb(240,92,50)',
         pointRadius: 0,
         fill: 'origin',
         spanGaps: true,
