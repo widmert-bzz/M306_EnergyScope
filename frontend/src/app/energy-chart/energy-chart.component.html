@@ -1,47 +1,49 @@
 <div class="energy-chart-container">
-  <h2>Energiedaten-Visualisierung</h2>
+  <div class="controls-container">
+    <h2>Energiedaten-Visualisierung</h2>
 
-  <div class="controls">
-    <div class="control-group">
-      <label for="sensor-select">Sensor auswählen:</label>
-      <select id="sensor-select" [(ngModel)]="selectedSensor" (change)="onSensorChange()">
-        <option *ngFor="let sensor of availableSensors" [value]="sensor">{{ sensor }}</option>
-      </select>
-    </div>
+    <div class="controls">
+      <div class="control-line">
+        <div class="sensor-select">
+          <label for="sensor-select">Sensor:</label>
+          <select id="sensor-select" [(ngModel)]="selectedSensor" (change)="onSensorChange()">
+            <option *ngFor="let sensor of availableSensors" [value]="sensor">{{ sensor }}</option>
+          </select>
+        </div>
 
-    <div class="control-group timestamp-range">
-      <div class="date-picker-container">
-        <label for="start-timestamp">Startdatum:</label>
-        <input type="date" id="start-timestamp" [(ngModel)]="selectedTimestampRange.startDate"
-               (change)="onStartDateChange()">
-      </div>
-    </div>
+        <div class="date-select">
+          <label for="start-timestamp">Startdatum:</label>
+          <input type="date" id="start-timestamp" [(ngModel)]="selectedTimestampRange.startDate"
+                 (change)="onStartDateChange()">
+        </div>
 
-    <div class="control-group">
-      <div class="date-picker-container">
-        <label for="end-timestamp">Enddatum:</label>
-        <input type="date" id="end-timestamp" [(ngModel)]="selectedTimestampRange.endDate" (change)="onEndDateChange()">
-      </div>
-    </div>
-
-    <div class="control-group data-type-selection">
-      <div class="data-type-checkbox">
-        <input type="checkbox" id="production" [(ngModel)]="selectedDataTypes.production" (change)="onDataTypeChange()">
-        <label for="production">Produktion</label>
-        <span class="data-type-description">Vom Zähler produzierte Energie (grün)</span>
+        <div class="date-select">
+          <label for="end-timestamp">Enddatum:</label>
+          <input type="date" id="end-timestamp" [(ngModel)]="selectedTimestampRange.endDate"
+                 (change)="onEndDateChange()">
+        </div>
       </div>
 
-      <div class="data-type-checkbox">
-        <input type="checkbox" id="consumption" [(ngModel)]="selectedDataTypes.consumption"
-               (change)="onDataTypeChange()">
-        <label for="consumption">Verbrauch</label>
-        <span class="data-type-description">Vom Zähler verbrauchte Energie (rot)</span>
-      </div>
+      <div class="control-group data-type-selection">
+        <div class="data-type-checkbox">
+          <input type="checkbox" id="production" [(ngModel)]="selectedDataTypes.production"
+                 (change)="onDataTypeChange()">
+          <label for="production">Produktion</label>
+          <span class="data-type-description">Vom Zähler produzierte Energie (grün)</span>
+        </div>
 
-      <div class="data-type-checkbox">
-        <input type="checkbox" id="net" [(ngModel)]="selectedDataTypes.net" (change)="onDataTypeChange()">
-        <label for="net">Netto</label>
-        <span class="data-type-description">Nettoenergie (Produktion - Verbrauch) (blau)</span>
+        <div class="data-type-checkbox">
+          <input type="checkbox" id="consumption" [(ngModel)]="selectedDataTypes.consumption"
+                 (change)="onDataTypeChange()">
+          <label for="consumption">Verbrauch</label>
+          <span class="data-type-description">Vom Zähler verbrauchte Energie (rot)</span>
+        </div>
+
+        <div class="data-type-checkbox">
+          <input type="checkbox" id="net" [(ngModel)]="selectedDataTypes.net" (change)="onDataTypeChange()">
+          <label for="net">Netto</label>
+          <span class="data-type-description">Nettoenergie (Produktion - Verbrauch) (blau)</span>
+        </div>
       </div>
     </div>
   </div>
