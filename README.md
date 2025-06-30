@@ -25,7 +25,7 @@ cd ..
 ./start_application.bat
 ```
 
-Anschließend öffnen Sie Ihren Browser und rufen folgende URL auf:
+Anschliessend öffnen Sie Ihren Browser und rufen folgende URL auf:
 
 [http://localhost:4200](http://localhost:4200)
 
