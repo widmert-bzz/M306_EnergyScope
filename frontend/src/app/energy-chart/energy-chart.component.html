@@ -59,10 +59,10 @@
       <button class="reset-zoom-btn" (click)="resetZoom()">Zoom zurücksetzen</button>
     </div>
     <div class="export-controls">
-      <button class="export-btn export-csv-btn" [disabled]="!hasDataToExport" (click)="exportAsCSV()">Als CSV
+      <button class="export-btn export-json-btn" [disabled]="!hasDataToExport" (click)="exportAsJSON()">Als JSON
         exportieren
       </button>
-      <button class="export-btn export-json-btn" [disabled]="!hasDataToExport" (click)="exportAsJSON()">Als JSON
+      <button class="export-btn export-csv-btn" [disabled]="!hasDataToExport" (click)="exportAsCSV()">Als CSV
         exportieren
       </button>
     </div>
